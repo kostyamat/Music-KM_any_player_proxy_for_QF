@@ -23,7 +23,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var adapter: ArrayAdapter<String>
 
     private lateinit var ourComponentsLayout: LinearLayout
-    //private lateinit var playerComponentsLayout: LinearLayout
 
     private lateinit var mainActivityLabel: TextView
     private lateinit var pcmPlayerActivityLabel: TextView
@@ -49,7 +48,6 @@ class MainActivity : AppCompatActivity() {
         mappingHeader = findViewById(R.id.mappingHeader)
 
         ourComponentsLayout = findViewById(R.id.ourComponentsLayout)
-        //playerComponentsLayout = findViewById(R.id.playerComponentsLayout)
 
         mainActivityLabel = findViewById(R.id.mainActivityLabel)
         pcmPlayerActivityLabel = findViewById(R.id.pcmPlayerActivityLabel)
@@ -123,7 +121,6 @@ class MainActivity : AppCompatActivity() {
         mappingHeader.visibility = View.GONE
         saveMappingButton.visibility = View.GONE
         ourComponentsLayout.visibility = View.GONE
-        //playerComponentsLayout.visibility = View.GONE
     }
 
     private fun showAllApps() {
@@ -155,7 +152,6 @@ class MainActivity : AppCompatActivity() {
         mappingHeader.visibility = View.GONE
         saveMappingButton.visibility = View.GONE
         ourComponentsLayout.visibility = View.GONE
-        //playerComponentsLayout.visibility = View.GONE
     }
 
     private fun showMappingInterface() {
@@ -166,7 +162,6 @@ class MainActivity : AppCompatActivity() {
         mappingHeader.visibility = View.VISIBLE
         saveMappingButton.visibility = View.VISIBLE
         ourComponentsLayout.visibility = View.VISIBLE
-        //playerComponentsLayout.visibility = View.VISIBLE
 
         val activities = getActivitiesForPackage(selectedPlayerPackageName)
         val services = getServicesForPackage(selectedPlayerPackageName)
@@ -209,6 +204,13 @@ class MainActivity : AppCompatActivity() {
             }
         }
         return null
+    }
+
+    private fun getActivitiesForPackage(packageName: String?): List<String> {
+        if (packageName == null) return emptyList()
+        val pm = packageManager
+        val packageInfo = pm.getPackageInfo(packageName, PackageManager.GET_ACTIVITIES)
+        return packageInfo.activities?.map { it.name.substringAfterLast(".") }?.map { shortenName(it, packageName) } ?: emptyList()
     }
 
     private fun getServicesForPackage(packageName: String?): List<String> {
