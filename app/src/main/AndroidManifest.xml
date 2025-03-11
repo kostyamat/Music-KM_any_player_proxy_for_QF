@@ -46,7 +46,7 @@
         android:name="android.permission.CHANGE_CONFIGURATION" />
 
     <application
-        android:label="@string/app_name"
+        android:label="@string/app_name2"
         android:icon="@mipmap/ic_launcher"
         android:name="com.qf.media.base.BaseApplication"
         android:theme="@style/Theme.Clone_MusicPlayer_QF"
@@ -56,87 +56,85 @@
         android:appComponentFactory="androidx.core.app.CoreComponentFactory"
         android:requestLegacyExternalStorage="true">
         <activity
-            android:label="@string/app_name"
-            android:name="com.qf.musicplayer.ui.MainActivity"
             android:exported="true"
-            android:clearTaskOnLaunch="true"
-            android:excludeFromRecents="false"
-            android:launchMode="singleTask"
-            android:configChanges="uiMode">
+            android:name="com.carsyso.mediasdk.core.SettingActivity"
+            android:icon="@mipmap/ic_launcher">
             <intent-filter>
                 <action
                     android:name="android.intent.action.MAIN" />
-                <category
-                    android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="com.qf.musicplayer.SETTING_ACTIVITY" />
             </intent-filter>
             <intent-filter>
-                <action
-                    android:name="android.intent.action.VIEW" />
-                <category
-                    android:name="android.intent.category.DEFAULT" />
-                <data
-                    android:scheme="file" />
-                <data
-                    android:mimeType="audio/*" />
-                <data
-                    android:mimeType="application/ogg" />
-                <data
-                    android:mimeType="application/x-ogg" />
-                <data
-                    android:mimeType="application/itunes" />
-            </intent-filter>
-            <intent-filter>
-                <action
-                    android:name="android.intent.action.VIEW" />
-                <category
-                    android:name="android.intent.category.DEFAULT" />
-                <category
-                    android:name="android.intent.category.BROWSABLE" />
-                <data
-                    android:scheme="content" />
-                <data
-                    android:mimeType="audio/*" />
-                <data
-                    android:mimeType="application/ogg" />
-                <data
-                    android:mimeType="application/x-ogg" />
-                <data
-                    android:mimeType="application/itunes" />
-            </intent-filter>
-            <intent-filter>
-                <action
-                    android:name="android.intent.action.VIEW" />
-                <category
-                    android:name="android.intent.category.DEFAULT" />
-                <data
-                    android:scheme="content" />
-                <data
-                    android:host="media" />
-                <data
-                    android:mimeType="audio/*" />
-                <data
-                    android:mimeType="application/ogg" />
-                <data
-                    android:mimeType="application/x-ogg" />
-                <data
-                    android:mimeType="application/itunes" />
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
             android:label="@string/app_name"
-            android:name="com.qf.musicplayer.ui.PcmPlayerActivity"
             android:exported="true"
             android:clearTaskOnLaunch="true"
             android:excludeFromRecents="false"
             android:launchMode="singleTask"
-            android:configChanges="uiMode">
+            android:configChanges="uiMode"
+            android:name=".ui.MainActivity">
             <intent-filter>
                 <action
                     android:name="android.intent.action.MAIN" />
-                <category
-                    android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:scheme="file" />
+                <data android:mimeType="audio/*" />
+                <data android:mimeType="application/ogg" />
+                <data android:mimeType="application/x-ogg" />
+                <data android:mimeType="application/itunes" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="content" />
+                <data android:mimeType="audio/*" />
+                <data android:mimeType="application/ogg" />
+                <data android:mimeType="application/x-ogg" />
+                <data android:mimeType="application/itunes" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:scheme="content" />
+                <data android:host="media" />
+                <data android:mimeType="audio/*" />
+                <data android:mimeType="application/ogg" />
+                <data android:mimeType="application/x-ogg" />
+                <data android:mimeType="application/itunes" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".ui.PcmPlayerActivity"
+            android:clearTaskOnLaunch="true"
+            android:configChanges="uiMode"
+            android:excludeFromRecents="false"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:launchMode="singleTask">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
         <service
             android:name="com.carsyso.mediasdk.core.MediaService"
             android:exported="true">
