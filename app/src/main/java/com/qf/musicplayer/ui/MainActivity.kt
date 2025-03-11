@@ -208,16 +208,16 @@ class MainActivity : AppCompatActivity() {
 
     private fun getActivitiesForPackage(packageName: String?): List<String> {
         if (packageName == null) return emptyList()
-        val pm = packageManager
+        val pm= packageManager
         val packageInfo = pm.getPackageInfo(packageName, PackageManager.GET_ACTIVITIES)
-        return packageInfo.activities?.map { it.name.substringAfterLast(".") }?.map { shortenName(it, packageName) } ?: emptyList()
+        return packageInfo.activities?.map { it.name.substringAfterLast(".").trim() }?.map { shortenName(it, packageName) } ?: emptyList()
     }
 
     private fun getServicesForPackage(packageName: String?): List<String> {
         if (packageName == null) return emptyList()
         val pm = packageManager
         val packageInfo = pm.getPackageInfo(packageName, PackageManager.GET_SERVICES)
-        return packageInfo.services?.map { it.name.substringAfterLast(".") }?.map { shortenName(it, packageName) } ?: emptyList()
+        return packageInfo.services?.map { it.name.substringAfterLast(".").trim() }?.map { shortenName(it, packageName) } ?: emptyList()
     }
 
     private fun shortenName(name: String, packageName: String?): String {
