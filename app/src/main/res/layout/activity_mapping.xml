@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:padding="16dp"
+    android:background="#EEEEEE">
+
+    <!-- Заголовок -->
+    <TextView
+        android:id="@+id/tvMappingHeader"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/mapping_header"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="#000000"
+        android:layout_marginEnd="16dp" />
+
+    <!-- Список для відображення компонентів -->
+    <ListView
+        android:id="@+id/lvMapping"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1" />
+
+    <!-- Кнопка для збереження налаштувань -->
+    <Button
+        android:id="@+id/btnSaveMapping"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/save_mapping"
+        android:layout_marginStart="16dp" />
+</LinearLayout>

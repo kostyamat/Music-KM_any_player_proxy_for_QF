@@ -1,0 +1,12 @@
+<resources>
+    <!-- Вже існуючі рядки -->
+    <string name="app_name">Music Player</string>
+    <string name="player_selection_title">Вибір плеєра</string>
+    <string name="player_selection_description">Оберіть плеєр для роботи з музикою:</string>
+    <string name="select_player_button">Обрати плеєр</string>
+    <string name="mapping_activity_title">Співставлення активностей</string>
+
+    <!-- Нові рядки -->
+    <string name="main_activity_text">Головна активність (MainActivity)</string>
+    <string name="pcm_activity_text">PCM-програвач (PcmPlayerActivity)</string>
+</resources>

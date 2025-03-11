@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">Music Player Clone</string>
+    <string name="select_player">Виберіть плеєр</string>
+    <string name="no_players_found">Плеєри не знайдено</string>
+    <string name="show_all_apps">Всі додатки</string>
+    <string name="back">Назад</string>
+    <string name="reselect">Перевибрати</string>
+    <string name="ok">ОК</string>
+    <string name="mapping_header">Зіставлення активностей</string>
+    <string name="save_mapping">Зберегти</string>
+
+    <!-- Додаю ці рядки, бо система їх запитувала -->
+    <string name="back_button">Назад</string>
+    <string name="reselect_button">Перевибрати</string>
+    <string name="ok_button">ОК</string>
+</resources>
