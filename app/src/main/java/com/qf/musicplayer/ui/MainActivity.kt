@@ -7,6 +7,8 @@ import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.qf.musicplayer.R
+import android.content.pm.ApplicationInfo
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -74,7 +76,12 @@ class MainActivity : AppCompatActivity() {
         val intent = Intent(Intent.ACTION_MAIN).apply { addCategory(Intent.CATEGORY_LAUNCHER) }
         val installedApps = pm.queryIntentActivities(intent, 0)
 
-        val appNames = installedApps.map { it.loadLabel(pm).toString() }
+        val userApps = installedApps.filter {
+            val appInfo = it.activityInfo.applicationInfo
+            (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) == 0 // Відсіюємо системні
+        }
+
+        val appNames = userApps.map { it.loadLabel(pm).toString() }
 
         if (appNames.isNotEmpty()) {
             adapter.clear()
@@ -90,6 +97,7 @@ class MainActivity : AppCompatActivity() {
         showAllAppsButton.text = getString(R.string.show_media_players)
         showingAllApps = true
     }
+
 
     override fun onBackPressed() {
         if (showingAllApps) {
