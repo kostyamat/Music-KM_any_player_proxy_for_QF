@@ -7,12 +7,12 @@
 
     <TextView
         android:id="@+id/noPlayersText"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="No media players found"
-        android:visibility="gone"
+        android:text="@string/no_players_found"
         android:textSize="18sp"
-        android:layout_gravity="center"/>
+        android:textStyle="bold"
+        android:visibility="gone"/>
 
     <ListView
         android:id="@+id/listView"
@@ -26,7 +26,21 @@
         android:id="@+id/showAllAppsButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Show All Apps"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="16dp"/>
+        android:text="@string/show_all_apps"/>
+
+    <TextView
+        android:id="@+id/mappingHeader"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/mapping_header"
+        android:textSize="16sp"
+        android:paddingTop="8dp"
+        android:visibility="gone"/>
+
+    <Button
+        android:id="@+id/saveMappingButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/save_mapping"
+        android:visibility="gone"/>
 </LinearLayout>
