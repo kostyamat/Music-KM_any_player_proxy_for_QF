@@ -1,19 +1,15 @@
 package com.carsyso.mediasdk.core
 
 import android.content.Intent
-import android.content.SharedPreferences
-import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
+import android.content.pm.ApplicationInfo
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.View
-import android.widget.ArrayAdapter
-import android.widget.Button
-import android.widget.LinearLayout
-import android.widget.ListView
-import android.widget.Spinner
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.ui.semantics.text
+import androidx.glance.visibility
 import com.qf.musicplayer.R
 
 class SettingActivity : AppCompatActivity() {
@@ -25,6 +21,7 @@ class SettingActivity : AppCompatActivity() {
     private lateinit var mappingHeader: TextView
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var adapter: ArrayAdapter<String>
+    private lateinit var mappingHelper: MappingHelper // Додаємо змінну для MappingHelper
 
     private lateinit var ourComponentsLayout: LinearLayout
 
@@ -64,6 +61,7 @@ class SettingActivity : AppCompatActivity() {
         listView.adapter = adapter
 
         sharedPreferences = getSharedPreferences("player_mapping", MODE_PRIVATE)
+        mappingHelper = MappingHelper(this) // Ініціалізуємо MappingHelper
 
         // Завжди показуємо інтерфейс вибору плеєра
         findMediaPlayers()
@@ -158,8 +156,9 @@ class SettingActivity : AppCompatActivity() {
         saveMappingButton.visibility = View.VISIBLE
         ourComponentsLayout.visibility = View.VISIBLE
 
-        val activities = getActivitiesForPackage(selectedPlayerPackageName)
-        val services = getServicesForPackage(selectedPlayerPackageName)
+        // Використовуємо методи з MappingHelper
+        val activities = mappingHelper.getActivitiesForPackage(selectedPlayerPackageName)
+        val services = mappingHelper.getServicesForPackage(selectedPlayerPackageName)
 
         val activityAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, activities)
         val serviceAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, services)
@@ -174,7 +173,7 @@ class SettingActivity : AppCompatActivity() {
         sharedPreferences.edit().putString("mapped_player", selectedPlayer)
             .putBoolean("is_mapping_saved", true).apply()
         Toast.makeText(this, "Mapping saved", Toast.LENGTH_SHORT).show()
-        finish() // Закриваємо активність
+        finish()
     }
 
     override fun onBackPressed() {
@@ -188,39 +187,8 @@ class SettingActivity : AppCompatActivity() {
         }
     }
 
+    // Використовуємо методи з MappingHelper
     private fun getPackageNameForPlayer(playerName: String?): String? {
-        if (playerName == null) return null
-        val pm = packageManager
-        val intent = Intent(Intent.ACTION_MAIN).apply { addCategory(Intent.CATEGORY_LAUNCHER) }
-        val installedApps = pm.queryIntentActivities(intent, 0)
-        for (resolveInfo in installedApps) {
-            if (resolveInfo.loadLabel(pm).toString() == playerName) {
-                return resolveInfo.activityInfo.packageName
-            }
-        }
-        return null
-    }
-
-    private fun getActivitiesForPackage(packageName: String?): List<String> {
-        if (packageName == null) return emptyList()
-        val pm= packageManager
-        val packageInfo = pm.getPackageInfo(packageName, PackageManager.GET_ACTIVITIES)
-        return packageInfo.activities?.map { it.name.substringAfterLast(".").trim() }?.map { shortenName(it, packageName) } ?: emptyList()
-    }
-
-    private fun getServicesForPackage(packageName: String?): List<String> {
-        if (packageName == null) return emptyList()
-        val pm = packageManager
-        val packageInfo = pm.getPackageInfo(packageName, PackageManager.GET_SERVICES)
-        return packageInfo.services?.map { it.name.substringAfterLast(".").trim() }?.map { shortenName(it, packageName) } ?: emptyList()
-    }
-
-    private fun shortenName(name: String, packageName: String?): String {
-        if (packageName == null) return name
-        return if (name.startsWith(packageName)) {
-            name.substring(packageName.length).trimStart('.')
-        } else {
-            name
-        }
+        return mappingHelper.getPackageNameForPlayer(playerName)
     }
 }
