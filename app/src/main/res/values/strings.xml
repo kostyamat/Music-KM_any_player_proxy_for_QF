@@ -10,4 +10,11 @@
     <string name="mapping_header">Зіставлення активностей</string>
     <string name="save_mapping">Зберегти</string>
     <string name="show_media_players">Знайдені плеєри</string>
+    <string name="help_main_activity">Виберіть головну активність плеєра.</string>
+    <string name="help_pcm_player_activity">Виберіть активність для відтворення PCM.</string>
+    <string name="help_media_service">Виберіть сервіс для медіа.</string>
+    <string name="mainactivity">MainActivity</string>
+    <string name="mediaservice">MediaService</string>
+    <string name="pcmplayeractivity">PcmPlayerActivity</string>
+    <string name="name_and_package">Плеєр (пакет)</string>
 </resources>

@@ -7,6 +7,7 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.View
 import android.widget.*
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.ui.semantics.text
 import androidx.glance.visibility
@@ -22,6 +23,7 @@ class SettingActivity : AppCompatActivity() {
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var adapter: ArrayAdapter<String>
     private lateinit var mappingHelper: MappingHelper // Додаємо змінну для MappingHelper
+    private lateinit var selectedPlayerInfoTextView: TextView
 
     private lateinit var ourComponentsLayout: LinearLayout
 
@@ -32,6 +34,10 @@ class SettingActivity : AppCompatActivity() {
     private lateinit var mainActivitySpinner: Spinner
     private lateinit var pcmPlayerActivitySpinner: Spinner
     private lateinit var mediaServiceSpinner: Spinner
+
+    private lateinit var helpMainActivity: ImageView
+    private lateinit var helpPcmPlayerActivity: ImageView
+    private lateinit var helpMediaService: ImageView
 
     private var selectedPlayer: String? = null
     private var selectedPlayerPackageName: String? = null
@@ -46,6 +52,9 @@ class SettingActivity : AppCompatActivity() {
         showAllAppsButton = findViewById(R.id.showAllAppsButton)
         saveMappingButton = findViewById(R.id.saveMappingButton)
         mappingHeader = findViewById(R.id.mappingHeader)
+        selectedPlayerInfoTextView = findViewById(R.id.selectedPlayerInfo)
+        // Перемістили цей рядок сюди
+        selectedPlayerInfoTextView.text = getString(R.string.select_player)
 
         ourComponentsLayout = findViewById(R.id.ourComponentsLayout)
 
@@ -56,6 +65,10 @@ class SettingActivity : AppCompatActivity() {
         mainActivitySpinner = findViewById(R.id.mainActivitySpinner)
         pcmPlayerActivitySpinner = findViewById(R.id.pcmPlayerActivitySpinner)
         mediaServiceSpinner = findViewById(R.id.mediaServiceSpinner)
+
+        helpMainActivity = findViewById(R.id.helpMainActivity)
+        helpPcmPlayerActivity = findViewById(R.id.helpPcmPlayerActivity)
+        helpMediaService = findViewById(R.id.helpMediaService)
 
         adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, mutableListOf())
         listView.adapter = adapter
@@ -83,6 +96,19 @@ class SettingActivity : AppCompatActivity() {
 
         saveMappingButton.setOnClickListener {
             saveMapping()
+        }
+
+        // Додаємо обробники кліків для знаків питання
+        helpMainActivity.setOnClickListener {
+            showHelpDialog(R.string.help_main_activity)
+        }
+
+        helpPcmPlayerActivity.setOnClickListener {
+            showHelpDialog(R.string.help_pcm_player_activity)
+        }
+
+        helpMediaService.setOnClickListener {
+            showHelpDialog(R.string.help_media_service)
         }
     }
 
@@ -166,6 +192,10 @@ class SettingActivity : AppCompatActivity() {
         mainActivitySpinner.adapter = activityAdapter
         pcmPlayerActivitySpinner.adapter = activityAdapter
         mediaServiceSpinner.adapter = serviceAdapter
+
+        // Виводимо інформацію про плеєр
+        val playerInfo = "Плеєр: ${selectedPlayer}\nПакет: ${selectedPlayerPackageName}"
+        selectedPlayerInfoTextView.text = playerInfo
     }
 
     private fun saveMapping() {
@@ -190,5 +220,13 @@ class SettingActivity : AppCompatActivity() {
     // Використовуємо методи з MappingHelper
     private fun getPackageNameForPlayer(playerName: String?): String? {
         return mappingHelper.getPackageNameForPlayer(playerName)
+    }
+
+    private fun showHelpDialog(messageResId: Int) {
+        AlertDialog.Builder(this)
+            .setTitle("Підказка")
+            .setMessage(getString(messageResId))
+            .setPositiveButton("OK", null)
+            .show()
     }
 }

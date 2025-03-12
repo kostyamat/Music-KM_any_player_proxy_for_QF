@@ -6,6 +6,16 @@
     android:padding="16dp">
 
     <TextView
+        android:id="@+id/selectedPlayerInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:padding="16dp"
+        android:text="@string/name_and_package"
+        android:textColor="@android:color/black"
+        android:textSize="18sp" />
+
+    <TextView
         android:id="@+id/noPlayersText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -47,64 +57,88 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:gravity="center_vertical"
             android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/helpMainActivity"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:padding="8dp"
+                android:src="@mipmap/ic_help" />
 
             <TextView
                 android:id="@+id/mainActivityLabel"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="MainActivity"
+                android:text="@string/mainactivity"
                 android:textSize="16sp" />
 
             <Spinner
                 android:id="@+id/mainActivitySpinner"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:spinnerMode="dropdown"
-                android:gravity="end" />
+                android:gravity="end"
+                android:spinnerMode="dropdown" />
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:gravity="center_vertical"
             android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/helpPcmPlayerActivity"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:padding="8dp"
+                android:src="@mipmap/ic_help" />
 
             <TextView
                 android:id="@+id/pcmPlayerActivityLabel"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="PcmPlayerActivity"
+                android:text="@string/pcmplayeractivity"
                 android:textSize="16sp" />
 
             <Spinner
                 android:id="@+id/pcmPlayerActivitySpinner"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:spinnerMode="dropdown"
-                android:gravity="end" />
+                android:gravity="end"
+                android:spinnerMode="dropdown" />
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:gravity="center_vertical"
             android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/helpMediaService"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:padding="8dp"
+                android:src="@mipmap/ic_help" />
 
             <TextView
                 android:id="@+id/mediaServiceLabel"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="MediaService"
+                android:text="@string/mediaservice"
                 android:textSize="16sp" />
 
             <Spinner
                 android:id="@+id/mediaServiceSpinner"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:spinnerMode="dropdown"
-                android:gravity="end" />
+                android:gravity="end"
+                android:spinnerMode="dropdown" />
         </LinearLayout>
     </LinearLayout>
 
