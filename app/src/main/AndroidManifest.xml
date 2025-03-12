@@ -78,7 +78,7 @@
             android:excludeFromRecents="false"
             android:launchMode="singleTask"
             android:configChanges="uiMode"
-            android:name=".ui.MainActivity">
+            android:name="com.qf.musicplayer.ui.MainActivity">
             <intent-filter>
                 <action
                     android:name="android.intent.action.MAIN" />
@@ -121,7 +121,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ui.PcmPlayerActivity"
+            android:name="com.qf.musicplayer.ui.PcmPlayerActivity"
             android:clearTaskOnLaunch="true"
             android:configChanges="uiMode"
             android:excludeFromRecents="false"
