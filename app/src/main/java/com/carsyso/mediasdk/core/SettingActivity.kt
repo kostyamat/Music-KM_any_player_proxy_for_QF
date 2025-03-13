@@ -2,8 +2,6 @@ package com.carsyso.mediasdk.core
 
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.content.pm.ApplicationInfo
-import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.View
 import android.widget.*
@@ -21,24 +19,15 @@ class SettingActivity : AppCompatActivity() {
     private lateinit var showAllAppsButton: Button
     private lateinit var saveMappingButton: Button
     private lateinit var mappingHeader: TextView
-    private lateinit var sharedPreferences: SharedPreferences
     private lateinit var adapter: ArrayAdapter<String>
     private lateinit var mappingHelper: MappingHelper
     private lateinit var selectedPlayerInfoTextView: TextView
+    private lateinit var appPreferences: AppPreferences
 
     private lateinit var ourComponentsLayout: LinearLayout
-
-    private lateinit var mainActivityLabel: TextView
-    private lateinit var pcmPlayerActivityLabel: TextView
-    private lateinit var mediaServiceLabel: TextView
-
     private lateinit var mainActivitySpinner: Spinner
     private lateinit var pcmPlayerActivitySpinner: Spinner
     private lateinit var mediaServiceSpinner: Spinner
-
-    private lateinit var helpMainActivity: ImageView
-    private lateinit var helpPcmPlayerActivity: ImageView
-    private lateinit var helpMediaService: ImageView
 
     private var selectedPlayer: String? = null
     private var selectedPlayerPackageName: String? = null
@@ -63,23 +52,18 @@ class SettingActivity : AppCompatActivity() {
         selectedPlayerInfoTextView.text = getString(R.string.select_player)
 
         ourComponentsLayout = findViewById(R.id.ourComponentsLayout)
-
-        mainActivityLabel = findViewById(R.id.mainActivityLabel)
-        pcmPlayerActivityLabel = findViewById(R.id.pcmPlayerActivityLabel)
-        mediaServiceLabel = findViewById(R.id.mediaServiceLabel)
-
         mainActivitySpinner = findViewById(R.id.mainActivitySpinner)
         pcmPlayerActivitySpinner = findViewById(R.id.pcmPlayerActivitySpinner)
         mediaServiceSpinner = findViewById(R.id.mediaServiceSpinner)
 
-        helpMainActivity = findViewById(R.id.helpMainActivity)
-        helpPcmPlayerActivity = findViewById(R.id.helpPcmPlayerActivity)
-        helpMediaService = findViewById(R.id.helpMediaService)
+        findViewById<ImageView>(R.id.helpMainActivity).setOnClickListener { showHelpDialog(R.string.help_main_activity) }
+        findViewById<ImageView>(R.id.helpPcmPlayerActivity).setOnClickListener { showHelpDialog(R.string.help_pcm_player_activity) }
+        findViewById<ImageView>(R.id.helpMediaService).setOnClickListener { showHelpDialog(R.string.help_media_service) }
 
         adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, mutableListOf())
         listView.adapter = adapter
 
-        sharedPreferences = getSharedPreferences("player_mapping", MODE_PRIVATE)
+        appPreferences = AppPreferences(this)
         mappingHelper = MappingHelper(this)
 
         findMediaPlayers()
@@ -103,18 +87,6 @@ class SettingActivity : AppCompatActivity() {
         saveMappingButton.setOnClickListener {
             saveMapping()
         }
-
-        helpMainActivity.setOnClickListener {
-            showHelpDialog(R.string.help_main_activity)
-        }
-
-        helpPcmPlayerActivity.setOnClickListener {
-            showHelpDialog(R.string.help_pcm_player_activity)
-        }
-
-        helpMediaService.setOnClickListener {
-            showHelpDialog(R.string.help_media_service)
-        }
     }
 
     private fun findMediaPlayers() {
@@ -126,13 +98,8 @@ class SettingActivity : AppCompatActivity() {
         val musicPlayers = pm.queryIntentActivities(musicIntent, PackageManager.MATCH_DEFAULT_ONLY)
 
         val allPlayers = (mediaPlayers + musicPlayers).distinctBy { it.activityInfo.packageName }
-
-        // Отримуємо пакетне ім'я нашої програми-клона
         val ourPackageName = packageName
-
-        // Фільтруємо список, виключаючи нашу програму-клон
         val filteredPlayers = allPlayers.filter { it.activityInfo.packageName != ourPackageName }
-
         val playerNames = filteredPlayers.map { it.loadLabel(pm).toString() }
 
         if (playerNames.isNotEmpty()) {
@@ -158,18 +125,12 @@ class SettingActivity : AppCompatActivity() {
         val pm = packageManager
         val intent = Intent(Intent.ACTION_MAIN).apply { addCategory(Intent.CATEGORY_LAUNCHER) }
         val installedApps = pm.queryIntentActivities(intent, 0)
-
-        // Отримуємо пакетне ім'я нашої програми-клона
         val ourPackageName = packageName
-
-        // Фільтруємо список, виключаючи нашу програму-клон
         val filteredApps = installedApps.filter { it.activityInfo.packageName != ourPackageName }
-
         val userApps = filteredApps.filter {
             val appInfo = it.activityInfo.applicationInfo
-            (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) == 0
+            (appInfo.flags and android.content.pm.ApplicationInfo.FLAG_SYSTEM) == 0
         }
-
         val appNames = userApps.map { it.loadLabel(pm).toString() }
 
         if (appNames.isNotEmpty()) {
@@ -294,9 +255,17 @@ class SettingActivity : AppCompatActivity() {
     }
 
     private fun saveMapping() {
-        sharedPreferences = getSharedPreferences("player_mapping", MODE_PRIVATE)
-        sharedPreferences.edit().putString("mapped_player", selectedPlayer)
-            .putBoolean("is_mapping_saved", true).apply()
+        val selectedMainActivity = mainActivitySpinner.selectedItem.toString()
+        val selectedPcmActivity = pcmPlayerActivitySpinner.selectedItem.toString()
+        val selectedMediaService = mediaServiceSpinner.selectedItem.toString()
+
+        appPreferences.saveRecommendedComponents(
+            selectedPlayerPackageName!!,
+            selectedMainActivity,
+            selectedPcmActivity,
+            selectedMediaService
+        )
+
         Log.d(TAG, "saveMapping(): Mapping saved for player: $selectedPlayer")
         Toast.makeText(this, "Mapping saved", Toast.LENGTH_SHORT).show()
         finish()
