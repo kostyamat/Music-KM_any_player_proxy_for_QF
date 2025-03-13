@@ -30,20 +30,20 @@ class MappingHelper(private val context: Context) {
         if (packageName == null || ignoredPackages.contains(packageName)) return emptyList()
         val pm = context.packageManager
         val packageInfo = pm.getPackageInfo(packageName, PackageManager.GET_ACTIVITIES)
-        return packageInfo.activities?.map { shortenName(it.name, packageName) } ?: emptyList()
+        return packageInfo.activities?.map { it.name } ?: emptyList()
     }
 
     fun getServicesForPackage(packageName: String?): List<String> {
         if (packageName == null || ignoredPackages.contains(packageName)) return emptyList()
         val pm = context.packageManager
         val packageInfo = pm.getPackageInfo(packageName, PackageManager.GET_SERVICES)
-        return packageInfo.services?.map { shortenName(it.name, packageName) } ?: emptyList()
+        return packageInfo.services?.map { it.name } ?: emptyList()
     }
 
     fun findRecommendedMainActivity(packageName: String?): String? {
         Log.d(TAG, "findRecommendedMainActivity() called with packageName: $packageName")
         if (packageName == null || ignoredPackages.contains(packageName)) return null
-        return getMainActivityName(context, packageName)?.let { shortenName(it, packageName) }
+        return getMainActivityName(context, packageName)
     }
 
     fun findRecommendedPcmPlayerActivity(packageName: String?): String? {
@@ -66,14 +66,14 @@ class MappingHelper(private val context: Context) {
         val pm = context.packageManager
         val intent = Intent(action).apply { type = mimeType }
         val resolvedActivities = pm.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY)
-        return resolvedActivities.firstOrNull { it.activityInfo.packageName == packageName }?.activityInfo?.name?.let { shortenName(it, packageName) }
+        return resolvedActivities.firstOrNull { it.activityInfo.packageName == packageName }?.activityInfo?.name
     }
 
     private fun findServiceByIntent(packageName: String, expectedAction: String): String? {
         val pm = context.packageManager
         val intent = Intent(expectedAction)
         val resolvedServices = pm.queryIntentServices(intent, PackageManager.MATCH_DEFAULT_ONLY)
-        return resolvedServices.firstOrNull { it.serviceInfo.packageName == packageName }?.serviceInfo?.name?.let { shortenName(it, packageName) }
+        return resolvedServices.firstOrNull { it.serviceInfo.packageName == packageName }?.serviceInfo?.name
     }
 
     private fun findBestMatch(items: List<String>, priorityMap: Map<List<String>, Int>, suffix: String): String? {
@@ -93,15 +93,10 @@ class MappingHelper(private val context: Context) {
         return scores.maxByOrNull { it.value }?.key ?: items.firstOrNull()
     }
 
-    private fun shortenName(name: String, packageName: String): String {
-        return name.removePrefix(packageName).removePrefix(".").substringAfterLast(".")
-    }
-
     private val prioritizedCombinations = mapOf(
         listOf("Playback") to 50,
         listOf("Music", "Playback") to 40,
         listOf("Audio", "Playback") to 40,
-        listOf("Player") to 22,
         listOf("Song") to 25,
         listOf("Play") to 25,
         listOf("Music") to 20,

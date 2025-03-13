@@ -170,37 +170,32 @@ class SettingActivity : AppCompatActivity() {
             uniqueMainActivities.add(recommendedMainActivity!!)
         }
         uniqueMainActivities.addAll(allActivities.filter { it != recommendedMainActivity })
-        val mainActivityAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, uniqueMainActivities)
+        val mainActivityAdapter = ArrayAdapter(
+            this,
+            R.layout.spinner_item,
+            uniqueMainActivities
+        ) // Використовуємо власний макет
         mainActivitySpinner.adapter = mainActivityAdapter
         val recommendedMainActivityIndex = uniqueMainActivities.indexOf(recommendedMainActivity)
         if (recommendedMainActivityIndex > 0) {
             mainActivitySpinner.setSelection(recommendedMainActivityIndex)
-            Log.d(TAG, "showMappingInterface(): MainActivity set automatically: $recommendedMainActivity")
+            Log.d(
+                TAG,
+                "showMappingInterface(): MainActivity set automatically: $recommendedMainActivity"
+            )
         }
         Log.d(TAG, "showMappingInterface(): All Activities: $allActivities")
 
-        mainActivitySpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
-                val selectedActivity = parent.getItemAtPosition(position).toString()
-                val isAutomatic = selectedActivity == recommendedMainActivity
-                recommendedMainActivity = selectedActivity
-                Log.d(TAG, "User selected MainActivity: $selectedActivity (Automatic: $isAutomatic)")
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>) {
-                // Do nothing
-            }
-        }
-
         // PcmPlayerActivity
-        recommendedPcmPlayerActivity = mappingHelper.findRecommendedPcmPlayerActivity(selectedPlayerPackageName)
+        recommendedPcmPlayerActivity =
+            mappingHelper.findRecommendedPcmPlayerActivity(selectedPlayerPackageName)
         val uniquePcmActivities = mutableListOf<String>()
         uniquePcmActivities.add("Вибрати вручну")
         if (recommendedPcmPlayerActivity != null) {
             uniquePcmActivities.add(recommendedPcmPlayerActivity!!)
         }
         uniquePcmActivities.addAll(allActivities.filter { it != recommendedPcmPlayerActivity })
-        val pcmActivityAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, uniquePcmActivities)
+        val pcmActivityAdapter = ArrayAdapter(this, R.layout.spinner_item, uniquePcmActivities) // Використовуємо власний макет
         pcmPlayerActivitySpinner.adapter = pcmActivityAdapter
         val recommendedPcmPlayerActivityIndex = uniquePcmActivities.indexOf(recommendedPcmPlayerActivity)
         if (recommendedPcmPlayerActivityIndex > 0) {
@@ -209,21 +204,9 @@ class SettingActivity : AppCompatActivity() {
         }
         Log.d(TAG, "showMappingInterface(): All Pcm Activities: $uniquePcmActivities")
 
-        pcmPlayerActivitySpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
-                val selectedActivity = parent.getItemAtPosition(position).toString()
-                val isAutomatic = selectedActivity == recommendedPcmPlayerActivity
-                recommendedPcmPlayerActivity = selectedActivity
-                Log.d(TAG, "User selected PcmPlayerActivity: $selectedActivity (Automatic: $isAutomatic)")
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>) {
-                // Do nothing
-            }
-        }
-
         // MediaService
-        recommendedMediaService = mappingHelper.findRecommendedMediaService(selectedPlayerPackageName)
+        recommendedMediaService =
+            mappingHelper.findRecommendedMediaService(selectedPlayerPackageName)
         val allMediaServices = mappingHelper.getServicesForPackage(selectedPlayerPackageName)
         val uniqueMediaServices = mutableListOf<String>()
         uniqueMediaServices.add("Вибрати вручну")
@@ -231,7 +214,7 @@ class SettingActivity : AppCompatActivity() {
             uniqueMediaServices.add(recommendedMediaService!!)
         }
         uniqueMediaServices.addAll(allMediaServices.filter { it != recommendedMediaService })
-        val serviceAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, uniqueMediaServices)
+        val serviceAdapter = ArrayAdapter(this, R.layout.spinner_item, uniqueMediaServices) // Використовуємо власний макет
         mediaServiceSpinner.adapter = serviceAdapter
         val recommendedMediaServiceIndex = uniqueMediaServices.indexOf(recommendedMediaService)
         if (recommendedMediaServiceIndex > 0) {

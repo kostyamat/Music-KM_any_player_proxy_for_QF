@@ -13,14 +13,15 @@
         android:padding="16dp"
         android:text="@string/name_and_package"
         android:textColor="@android:color/black"
-        android:textSize="18sp" />
+        android:textSize="16sp" />
 
     <TextView
         android:id="@+id/noPlayersText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/no_players_found"
-        android:textSize="18sp"
+        android:textColor="@color/black"
+        android:textSize="16sp"
         android:textStyle="bold"
         android:visibility="gone" />
 
@@ -44,7 +45,10 @@
         android:layout_height="wrap_content"
         android:paddingTop="8dp"
         android:text="@string/mapping_header"
+        android:textColor="@color/black"
+        android:gravity="center"
         android:textSize="16sp"
+        android:textStyle="bold"
         android:visibility="gone" />
 
     <LinearLayout
@@ -62,9 +66,9 @@
 
             <ImageView
                 android:id="@+id/helpMainActivity"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:padding="8dp"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:padding="4dp"
                 android:src="@mipmap/ic_help" />
 
             <TextView
@@ -73,13 +77,13 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/mainactivity"
+                android:textColor="@color/black"
                 android:textSize="16sp" />
 
             <Spinner
                 android:id="@+id/mainActivitySpinner"
-                android:layout_width="wrap_content"
+                android:layout_width="350dp"
                 android:layout_height="wrap_content"
-                android:gravity="end"
                 android:spinnerMode="dropdown" />
         </LinearLayout>
 
@@ -91,9 +95,9 @@
 
             <ImageView
                 android:id="@+id/helpPcmPlayerActivity"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:padding="8dp"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:padding="4dp"
                 android:src="@mipmap/ic_help" />
 
             <TextView
@@ -102,13 +106,13 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/pcmplayeractivity"
+                android:textColor="@color/black"
                 android:textSize="16sp" />
 
             <Spinner
                 android:id="@+id/pcmPlayerActivitySpinner"
-                android:layout_width="wrap_content"
+                android:layout_width="350dp"
                 android:layout_height="wrap_content"
-                android:gravity="end"
                 android:spinnerMode="dropdown" />
         </LinearLayout>
 
@@ -120,9 +124,9 @@
 
             <ImageView
                 android:id="@+id/helpMediaService"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:padding="8dp"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:padding="4dp"
                 android:src="@mipmap/ic_help" />
 
             <TextView
@@ -131,13 +135,13 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/mediaservice"
+                android:textColor="@color/black"
                 android:textSize="16sp" />
 
             <Spinner
                 android:id="@+id/mediaServiceSpinner"
-                android:layout_width="wrap_content"
+                android:layout_width="350dp"
                 android:layout_height="wrap_content"
-                android:gravity="end"
                 android:spinnerMode="dropdown" />
         </LinearLayout>
     </LinearLayout>
