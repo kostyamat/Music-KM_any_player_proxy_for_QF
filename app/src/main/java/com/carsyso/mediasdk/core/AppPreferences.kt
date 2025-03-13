@@ -5,9 +5,8 @@ import android.content.SharedPreferences
 import android.util.Log
 
 class AppPreferences(context: Context) {
-
     private val sharedPreferences: SharedPreferences =
-        context.getSharedPreferences("app_settings", Context.MODE_PRIVATE)
+        context.getSharedPreferences("app_preferences", Context.MODE_PRIVATE)
     private val TAG = "AppPreferences"
 
     fun saveRecommendedComponents(
@@ -17,45 +16,34 @@ class AppPreferences(context: Context) {
         mediaService: String?
     ) {
         val editor = sharedPreferences.edit()
-        editor.putString("${packageName}_mainActivity", mainActivity)
-        editor.putString("${packageName}_pcmPlayerActivity", pcmPlayerActivity)
-        editor.putString("${packageName}_mediaService", mediaService)
+        editor.putString("$packageName:mainActivity", mainActivity)
+        editor.putString("$packageName:pcmPlayerActivity", pcmPlayerActivity)
+        editor.putString("$packageName:mediaService", mediaService)
         editor.apply()
-        Log.d(TAG, "saveRecommendedComponents: $packageName")
-        Log.d(TAG, "saveRecommendedComponents: mainActivity: $mainActivity")
-        Log.d(TAG, "saveRecommendedComponents: pcmPlayerActivity: $pcmPlayerActivity")
-        Log.d(TAG, "saveRecommendedComponents: mediaService: $mediaService")
-    }
-
-    fun getRecommendedMainActivity(packageName: String): String? {
-        val mainActivity = sharedPreferences.getString("${packageName}_mainActivity", null)
-        Log.d(TAG, "getRecommendedMainActivity: packageName: $packageName, mainActivity: $mainActivity")
-        return mainActivity
-    }
-
-    fun getRecommendedPcmPlayerActivity(packageName: String): String? {
-        val pcmPlayerActivity = sharedPreferences.getString("${packageName}_pcmPlayerActivity", null)
-        Log.d(TAG, "getRecommendedPcmPlayerActivity: packageName: $packageName, pcmPlayerActivity: $pcmPlayerActivity")
-        return pcmPlayerActivity
-    }
-
-    fun getRecommendedMediaService(packageName: String): String? {
-        val mediaService = sharedPreferences.getString("${packageName}_mediaService", null)
-        Log.d(TAG, "getRecommendedMediaService: packageName: $packageName, mediaService: $mediaService")
-        return mediaService
+        Log.d(TAG, "saveRecommendedComponents: packageName: $packageName, mainActivity: $mainActivity, pcmPlayerActivity: $pcmPlayerActivity, mediaService: $mediaService")
     }
 
     fun getRecommendedComponents(packageName: String): Map<String, String?> {
-        val components = mapOf(
-            "mainActivity" to getRecommendedMainActivity(packageName),
-            "pcmPlayerActivity" to getRecommendedPcmPlayerActivity(packageName),
-            "mediaService" to getRecommendedMediaService(packageName)
-        )
+        val components = mutableMapOf<String, String?>()
+        components["mainActivity"] = getRecommendedMainActivity(packageName)
+        components["pcmPlayerActivity"] = getRecommendedPcmPlayerActivity(packageName)
+        components["mediaService"] = getRecommendedMediaService(packageName)
         Log.d(TAG, "getRecommendedComponents: packageName: $packageName, components: $components")
         return components
     }
 
-    fun clearAllData() {
-        sharedPreferences.edit().clear().apply()
+    fun getRecommendedMainActivity(packageName: String): String? {
+        Log.d(TAG, "getRecommendedMainActivity: packageName: $packageName, mainActivity: ${sharedPreferences.getString("$packageName:mainActivity", null)}")
+        return sharedPreferences.getString("$packageName:mainActivity", null)
+    }
+
+    fun getRecommendedPcmPlayerActivity(packageName: String): String? {
+        Log.d(TAG, "getRecommendedPcmPlayerActivity: packageName: $packageName, pcmPlayerActivity: ${sharedPreferences.getString("$packageName:pcmPlayerActivity", null)}")
+        return sharedPreferences.getString("$packageName:pcmPlayerActivity", null)
+    }
+
+    fun getRecommendedMediaService(packageName: String): String? {
+        Log.d(TAG, "getRecommendedMediaService: packageName: $packageName, mediaService: ${sharedPreferences.getString("$packageName:mediaService", null)}")
+        return sharedPreferences.getString("$packageName:mediaService", null)
     }
 }

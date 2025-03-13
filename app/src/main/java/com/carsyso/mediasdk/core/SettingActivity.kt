@@ -183,6 +183,7 @@ class SettingActivity : AppCompatActivity() {
             override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
                 val selectedActivity = parent.getItemAtPosition(position).toString()
                 val isAutomatic = selectedActivity == recommendedMainActivity
+                recommendedMainActivity = selectedActivity
                 Log.d(TAG, "User selected MainActivity: $selectedActivity (Automatic: $isAutomatic)")
             }
 
@@ -212,6 +213,7 @@ class SettingActivity : AppCompatActivity() {
             override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
                 val selectedActivity = parent.getItemAtPosition(position).toString()
                 val isAutomatic = selectedActivity == recommendedPcmPlayerActivity
+                recommendedPcmPlayerActivity = selectedActivity
                 Log.d(TAG, "User selected PcmPlayerActivity: $selectedActivity (Automatic: $isAutomatic)")
             }
 
@@ -242,6 +244,7 @@ class SettingActivity : AppCompatActivity() {
             override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
                 val selectedService = parent.getItemAtPosition(position).toString()
                 val isAutomatic = selectedService == recommendedMediaService
+                recommendedMediaService = selectedService
                 Log.d(TAG, "User selected MediaService: $selectedService (Automatic: $isAutomatic)")
             }
 
@@ -265,7 +268,10 @@ class SettingActivity : AppCompatActivity() {
             selectedPcmActivity,
             selectedMediaService
         )
-
+        // Зберігаємо назву пакета з ключем "mapped_player"
+        val editor = getSharedPreferences("app_settings", MODE_PRIVATE).edit()
+        editor.putString("mapped_player", selectedPlayerPackageName)
+        editor.apply()
         Log.d(TAG, "saveMapping(): Mapping saved for player: $selectedPlayer")
         Toast.makeText(this, "Mapping saved", Toast.LENGTH_SHORT).show()
         finish()
