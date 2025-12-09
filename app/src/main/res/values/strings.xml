@@ -1,20 +1,4 @@
 <resources>
-    <string name="app_name">Music</string>
-    <string name="app_name2">Music Setting</string>
-    <string name="select_player">Виберіть плеєр</string>
-    <string name="no_players_found">Плеєри не знайдено</string>
-    <string name="show_all_apps">Всі додатки</string>
-    <string name="back">Назад</string>
-    <string name="reselect">Перевибрати</string>
-    <string name="ok">ОК</string>
-    <string name="mapping_header">Зіставлення активностей</string>
-    <string name="save_mapping">Зберегти</string>
-    <string name="show_media_players">Знайдені плеєри</string>
-    <string name="help_main_activity">Виберіть головну активність плеєра.</string>
-    <string name="help_pcm_player_activity">Виберіть активність для відтворення PCM.</string>
-    <string name="help_media_service">Виберіть сервіс для медіа.</string>
-    <string name="mainactivity">MainActivity</string>
-    <string name="mediaservice">MediaService</string>
-    <string name="pcmplayeractivity">PcmPlayerActivity</string>
-    <string name="name_and_package">Плеєр (пакет)</string>
+    <string name="app_name">MusicProxy</string>
+    <string name="activity_name">Music</string>
 </resources>
