@@ -1,4 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">MusicProxy</string>
+    <string name="activity_name">Музыка</string>
     <string name="player_not_found_title">MusicProxy: Плеер не найден</string>
     <string name="player_not_found_message">Не могу открыть сконфигурированный плеер. Проверьте, установлен ли плеер и правильно ли вы вписали в конфиг название пакета и активности (* для автоматического поиска активности).</string>
 </resources>

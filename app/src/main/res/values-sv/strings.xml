@@ -1,4 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">MusicProxy</string>
+    <string name="activity_name">Musik</string>
     <string name="player_not_found_title">MusicProxy: Spelaren hittades inte</string>
     <string name="player_not_found_message">Kan inte öppna den konfigurerade spelaren. Kontrollera om spelaren är installerad och om paketnamnet och aktiviteten (* för automatisk aktivitetssökning) är korrekt skrivna i konfigurationsfilen.</string>
 </resources>

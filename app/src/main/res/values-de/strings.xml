@@ -1,4 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">MusicProxy</string>
+    <string name="activity_name">Musik</string>
     <string name="player_not_found_title">MusicProxy: Player nicht gefunden</string>
     <string name="player_not_found_message">Der konfigurierte Player kann nicht geöffnet werden. Bitte überprüfen Sie, ob der Player installiert ist und ob der Paketname und die Aktivität (* für automatische Aktivitätssuche) korrekt in der Konfigurationsdatei eingetragen sind.</string>
 </resources>

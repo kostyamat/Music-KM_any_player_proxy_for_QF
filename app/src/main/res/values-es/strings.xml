@@ -1,4 +1,6 @@
 <resources>
+    <string name="app_name">MusicProxy</string>
+    <string name="activity_name">Música</string>
     <string name="player_not_found_title">MusicProxy: Reproductor no encontrado</string>
     <string name="player_not_found_message">No se puede abrir el reproductor configurado. Verifique si el reproductor está instalado y si el nombre del paquete y la actividad (* para búsqueda automática de actividad) están escritos correctamente en el archivo de configuración.</string>
 </resources>
