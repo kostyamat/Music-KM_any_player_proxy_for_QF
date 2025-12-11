@@ -9,7 +9,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
-import android.media.AudioManager
 import android.os.Bundle
 import android.os.Environment
 import android.os.Handler
@@ -186,7 +185,7 @@ class MainActivity : Activity() {
         return try {
             packageManager.getPackageInfo(packageName, 0)
             true
-        } catch (e: PackageManager.NameNotFoundException) {
+        } catch (_: PackageManager.NameNotFoundException) {
             false
         }
     }
@@ -260,7 +259,7 @@ class MainActivity : Activity() {
         super.onDestroy()
         try {
             unregisterReceiver(modeReceiver)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             // Already unregistered
         }
         handler.removeCallbacksAndMessages(null)

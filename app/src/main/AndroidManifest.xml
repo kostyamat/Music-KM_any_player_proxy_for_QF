@@ -10,6 +10,7 @@
     <uses-permission android:name="android.permission.REORDER_TASKS" />
 
     <application
+        android:icon="@mipmap/ic_launcher"
         android:requestLegacyExternalStorage="true"
         android:label="Music Proxy"
         android:theme="@android:style/Theme.NoTitleBar">
@@ -30,7 +31,7 @@
             </intent-filter>
         </activity>
 
-        <service android:name="com.qf.musicplayer.ui.MediaService" android:exported="true">
+        <service android:name="com.qf.musicplayer.ui.MediaService" android:exported="false">
             <intent-filter>
                 <action android:name="com.qf.musicplayer.MediaService" />
             </intent-filter>
