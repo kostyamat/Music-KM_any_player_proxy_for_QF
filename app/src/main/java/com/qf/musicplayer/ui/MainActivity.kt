@@ -2,6 +2,7 @@ package com.qf.musicplayer.ui
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
@@ -131,6 +132,12 @@ class MainActivity : Activity() {
             return
         }
 
+        if (!isPackageInstalled(targetPackage)) {
+            Log.e(TAG, "Target player not installed: $targetPackage")
+            showPlayerNotFoundDialog()
+            return
+        }
+
         try {
             Log.d(TAG, "Launching Target: $targetPackage")
 
@@ -163,6 +170,24 @@ class MainActivity : Activity() {
         } catch (e: Exception) {
             Log.e(TAG, "Failed to launch player", e)
             finish()
+        }
+    }
+
+    private fun showPlayerNotFoundDialog() {
+        AlertDialog.Builder(this)
+            .setTitle(getString(R.string.player_not_found_title))
+            .setMessage(getString(R.string.player_not_found_message))
+            .setPositiveButton(android.R.string.ok) { _, _ -> finish() }
+            .setOnCancelListener { finish() }
+            .show()
+    }
+
+    private fun isPackageInstalled(packageName: String): Boolean {
+        return try {
+            packageManager.getPackageInfo(packageName, 0)
+            true
+        } catch (e: PackageManager.NameNotFoundException) {
+            false
         }
     }
 

@@ -1,0 +1,4 @@
+<resources>
+    <string name="player_not_found_title">MusicProxy: 无法找到播放器</string>
+    <string name="player_not_found_message">无法打开配置的播放器。请检查播放器是否已安装，以及包名和活动（* 表示自动搜索活动）是否在配置文件中正确写入。</string>
+</resources>

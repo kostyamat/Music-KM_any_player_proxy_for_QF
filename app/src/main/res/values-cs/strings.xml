@@ -1,0 +1,4 @@
+<resources>
+    <string name="player_not_found_title">MusicProxy: Přehrávač nenalezen</string>
+    <string name="player_not_found_message">Nelze otevřít nakonfigurovaný přehrávač. Zkontrolujte, zda je přehrávač nainstalován a zda jsou název balíčku a aktivita (* pro automatické vyhledávání aktivity) správně zapsány v konfiguračním souboru.</string>
+</resources>

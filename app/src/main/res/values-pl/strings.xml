@@ -1,0 +1,4 @@
+<resources>
+    <string name="player_not_found_title">MusicProxy: Nie znaleziono odtwarzacza</string>
+    <string name="player_not_found_message">Nie można otworzyć skonfigurowanego odtwarzacza. Sprawdź, czy odtwarzacz jest zainstalowany i czy nazwa pakietu i aktywność (* dla automatycznego wyszukiwania aktywności) są poprawnie wpisane w pliku konfiguracyjnym.</string>
+</resources>

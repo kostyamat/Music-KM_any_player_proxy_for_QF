@@ -1,0 +1,4 @@
+<resources>
+    <string name="player_not_found_title">MusicProxy: Lettore non trovato</string>
+    <string name="player_not_found_message">Impossibile aprire il lettore configurato. Controlla se il lettore è installato e se il nome del pacchetto e l\'attività (* per la ricerca automatica dell\'attività) sono scritti correttamente nel file di configurazione.</string>
+</resources>

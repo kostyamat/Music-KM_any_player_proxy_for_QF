@@ -1,0 +1,4 @@
+<resources>
+    <string name="player_not_found_title">MusicProxy: Player nicht gefunden</string>
+    <string name="player_not_found_message">Der konfigurierte Player kann nicht geöffnet werden. Bitte überprüfen Sie, ob der Player installiert ist und ob der Paketname und die Aktivität (* für automatische Aktivitätssuche) korrekt in der Konfigurationsdatei eingetragen sind.</string>
+</resources>

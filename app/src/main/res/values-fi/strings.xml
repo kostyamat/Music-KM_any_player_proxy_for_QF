@@ -1,0 +1,4 @@
+<resources>
+    <string name="player_not_found_title">MusicProxy: Soitinta ei löytynyt</string>
+    <string name="player_not_found_message">Määritettyä soitinta ei voi avata. Tarkista, onko soitin asennettu ja onko paketin nimi ja toiminto (* automaattista toimintohakua varten) kirjoitettu oikein asetustiedostoon.</string>
+</resources>

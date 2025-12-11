@@ -1,0 +1,4 @@
+<resources>
+    <string name="player_not_found_title">MusicProxy : Lecteur introuvable</string>
+    <string name="player_not_found_message">Impossible d\'ouvrir le lecteur configuré. Veuillez vérifier si le lecteur est installé et si le nom du package et l\'activité (* pour une recherche d\'activité automatique) sont correctement écrits dans le fichier de configuration.</string>
+</resources>
