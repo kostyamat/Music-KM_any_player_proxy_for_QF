@@ -1,9 +1,13 @@
 package com.qf.musicplayer.ui
 
+import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.media.AudioManager
 import android.os.Bundle
 import android.os.Environment
@@ -12,6 +16,7 @@ import android.os.Looper
 import android.os.SystemClock
 import android.util.Log
 import android.view.KeyEvent
+import android.view.MotionEvent
 import android.view.WindowManager
 import java.io.BufferedReader
 import java.io.File
@@ -22,6 +27,8 @@ class MainActivity : Activity() {
     companion object {
         private const val TAG = "PcmProxy"
         private const val DEFAULT_DELAY = 5L
+        private const val ACTION_MODE_SWITCH = "android.intent.action.MODE_SWITCH"
+        private const val PERMISSION_REQUEST_CODE = 100
     }
 
     private val configPath = File(Environment.getExternalStorageDirectory(), "player.config").absolutePath
@@ -30,111 +37,208 @@ class MainActivity : Activity() {
     private var playDelay: Long = DEFAULT_DELAY
 
     private val handler = Handler(Looper.getMainLooper())
-
-    // Змінна для захисту від багаторазового запуску (Debounce)
     private var lastLaunchTime: Long = 0
+    private var permissionsGranted: Boolean = false
 
+    private val modeReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == ACTION_MODE_SWITCH) {
+                Log.d(TAG, "MODE button pressed - finishing proxy")
+                finish()
+            }
+        }
+    }
+
+    @SuppressLint("UnspecifiedRegisterReceiverFlag")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Встановлюємо прапорці, щоб вікно точно створилось і система його побачила
+
+        setShowWhenLocked(true)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        Log.d(TAG, "onCreate: Proxy Window Created")
+
+        try {
+            val filter = IntentFilter(ACTION_MODE_SWITCH)
+            registerReceiver(modeReceiver, filter)
+            Log.d(TAG, "Mode receiver registered")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to register mode receiver", e)
+        }
+
+        Log.d(TAG, "onCreate: Transparent Proxy Created")
     }
 
     override fun onResume() {
         super.onResume()
 
-        // --- ЗАХИСТ ВІД ЗАЦИКЛЕННЯ ---
         val currentTime = SystemClock.elapsedRealtime()
-        if (currentTime - lastLaunchTime < 3000) {
-            // Якщо минуло менше 3 секунд з минулого запуску - ігноруємо.
-            Log.d(TAG, "onResume: Skipped (Debounce active)")
+        if (currentTime - lastLaunchTime < 2000) {
+            Log.d(TAG, "onResume: Skipped (Debounce, ${currentTime - lastLaunchTime}ms)")
             return
         }
         lastLaunchTime = currentTime
-        // ------------------------------
 
-        Log.d(TAG, "onResume: Processing Launch Logic")
-        loadConfig()
+        Log.d(TAG, "onResume: Starting proxy logic")
 
-        // КРОК 1: Ми нічого не робимо перші 500 мс.
-        // Ми просто показуємо чорний екран. Це дає каруселі час зрозуміти:
-        // "Ага, додаток com.qf.musicplayer.ui успішно відкрився і намалювався".
+        if (!checkAndRequestPermissions()) {
+            Log.d(TAG, "Waiting for permissions...")
+            return
+        }
 
-        handler.postDelayed({
-            startPlayer()
-        }, 500) // Затримка пів секунди перед відкриттям Spotify
+        proceedWithLaunch()
     }
 
+    private fun checkAndRequestPermissions(): Boolean {
+        if (checkSelfPermission(android.Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE), PERMISSION_REQUEST_CODE)
+            return false
+        }
+        permissionsGranted = true
+        return true
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == PERMISSION_REQUEST_CODE) {
+            permissionsGranted = grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED
+            if (permissionsGranted) {
+                Log.d(TAG, "Permission GRANTED by user")
+            } else {
+                Log.e(TAG, "Permission DENIED by user, using defaults")
+            }
+            proceedWithLaunch()
+        }
+    }
+
+    private fun proceedWithLaunch() {
+        loadConfig()
+        handler.postDelayed({ startPlayer() }, 500) // Small delay before starting player
+    }
+
+    override fun onTouchEvent(event: MotionEvent?): Boolean {
+        if (event?.action == MotionEvent.ACTION_DOWN) {
+            Log.d(TAG, "Touch detected - finishing proxy")
+            finish()
+            return true
+        }
+        return super.onTouchEvent(event)
+    }
+
+    @SuppressLint("QueryPermissionsNeeded")
     private fun startPlayer() {
-        if (targetPackage.isEmpty() || targetPackage == packageName) return
+        if (targetPackage.isEmpty() || targetPackage == packageName) {
+            Log.e(TAG, "Invalid target package")
+            finish()
+            return
+        }
 
         try {
             Log.d(TAG, "Launching Target: $targetPackage")
-            val intent = Intent()
-            if (targetClass == "*" || targetClass.isEmpty()) {
-                val launchIntent = packageManager.getLaunchIntentForPackage(targetPackage)
-                intent.component = launchIntent?.component
+
+            val intent: Intent? = if (targetClass == "*" || targetClass.isEmpty()) {
+                packageManager.getLaunchIntentForPackage(targetPackage)
             } else {
-                intent.component = ComponentName(targetPackage, targetClass)
+                Intent().setComponent(ComponentName(targetPackage, targetClass))
             }
 
-            if (intent.component != null) {
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                startActivity(intent)
-
-                // Плануємо натискання Play
-                schedulePlayCommand()
-            } else {
-                Log.e(TAG, "Target Intent is null")
+            if (intent == null) {
+                Log.e(TAG, "Failed to get launch intent for $targetPackage")
+                finish()
+                return
             }
+
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            startActivity(intent)
+            Log.d(TAG, "Player launched successfully")
+
+            // Bring our proxy activity back to the front to be "on top" for the carousel.
+            handler.postDelayed({
+                Log.d(TAG, "Bringing proxy back to the front.")
+                val selfIntent = Intent(this, MainActivity::class.java)
+                selfIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+                startActivity(selfIntent)
+            }, 350) // A small delay to let the player launch.
+
+            proceedAfterLaunch()
 
         } catch (e: Exception) {
             Log.e(TAG, "Failed to launch player", e)
+            finish()
         }
+    }
+
+    private fun proceedAfterLaunch() {
+        Log.d(TAG, "Scheduling PLAY command.")
+        schedulePlayCommand()
     }
 
     private fun schedulePlayCommand() {
         if (playDelay > 0L) {
-            // Важливо: playDelay відраховується вже ПІСЛЯ запуску Spotify
-            Log.d(TAG, "Scheduling PLAY in $playDelay sec")
+            val totalDelay = playDelay * 100L
+            Log.d(TAG, "Scheduling PLAY in ${totalDelay}ms")
 
-            // Використовуємо окремий Handler або той самий, але переконаємось що він свіжий
-            handler.postDelayed({
-                sendMediaKey(KeyEvent.KEYCODE_MEDIA_PLAY)
-
-                // Опціонально: Тільки тепер можна згорнути наше вікно, якщо воно ще висить
-                // moveTaskToBack(true)
-            }, playDelay * 100L)
+            handler.postDelayed({ sendMediaPlayKey() }, totalDelay)
+        } else {
+            Log.d(TAG, "Play delay is 0, skipping auto-play.")
         }
     }
 
-    private fun sendMediaKey(keyCode: Int) {
-        Log.d(TAG, "Sending Media Key: $keyCode")
+    private fun sendMediaPlayKey() {
+        Log.d(TAG, "Sending Media Key Intent: KEYCODE_MEDIA_PLAY")
         try {
-            val time = SystemClock.uptimeMillis()
-            val down = KeyEvent(time, time, KeyEvent.ACTION_DOWN, keyCode, 0)
-            val up = KeyEvent(time, time, KeyEvent.ACTION_UP, keyCode, 0)
+            val downIntent = Intent(Intent.ACTION_MEDIA_BUTTON).apply {
+                `package` = targetPackage
+                putExtra(Intent.EXTRA_KEY_EVENT, KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PLAY))
+            }
+            sendBroadcast(downIntent)
 
-            val am = getSystemService(Context.AUDIO_SERVICE) as AudioManager
-            am.dispatchMediaKeyEvent(down)
-            am.dispatchMediaKeyEvent(up)
+            Thread.sleep(50)
+
+            val upIntent = Intent(Intent.ACTION_MEDIA_BUTTON).apply {
+                `package` = targetPackage
+                putExtra(Intent.EXTRA_KEY_EVENT, KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_PLAY))
+            }
+            sendBroadcast(upIntent)
+
+            Log.d(TAG, "Media key intent dispatched successfully to $targetPackage")
         } catch (e: Exception) {
-            Log.e(TAG, "Error sending media key", e)
+            Log.e(TAG, "Error sending media key intent", e)
         }
     }
 
     private fun loadConfig() {
+        if (!permissionsGranted) {
+            Log.w(TAG, "Permissions not granted, using defaults.")
+            return
+        }
         val file = File(configPath)
         if (file.exists()) {
             try {
                 BufferedReader(FileReader(file)).use { br ->
-                    targetPackage = br.readLine()?.trim() ?: ""
-                    targetClass = br.readLine()?.trim() ?: ""
+                    val pkg = br.readLine()?.trim()
+                    val cls = br.readLine()?.trim()
                     val d = br.readLine()?.trim()
+
+                    if (!pkg.isNullOrEmpty()) targetPackage = pkg
+                    if (!cls.isNullOrEmpty()) targetClass = cls
                     playDelay = d?.toLongOrNull() ?: DEFAULT_DELAY
                 }
-            } catch (e: Exception) { }
+                Log.d(TAG, "Config loaded: pkg=$targetPackage, cls=$targetClass, delay=${playDelay * 100}ms")
+            } catch (e: Exception) {
+                Log.e(TAG, "ERROR reading config file!", e)
+            }
+        } else {
+            Log.d(TAG, "Config file not found. Using defaults.")
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        try {
+            unregisterReceiver(modeReceiver)
+        } catch (e: Exception) {
+            // Already unregistered
+        }
+        handler.removeCallbacksAndMessages(null)
+        Log.d(TAG, "onDestroy: Proxy destroyed")
     }
 }
