@@ -14,6 +14,7 @@ import android.os.Environment
 import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
+import android.provider.Settings
 import android.util.Log
 import android.view.KeyEvent
 import android.view.MotionEvent
@@ -53,6 +54,14 @@ class MainActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        if (intent.action == Intent.ACTION_MAIN && !isNotificationListenerEnabled()) {
+            Log.d(TAG, "Notification Listener not enabled. Opening settings...")
+            val intent = Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
+            startActivity(intent)
+            finish()
+            return
+        }
+
         setShowWhenLocked(true)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
@@ -85,6 +94,12 @@ class MainActivity : Activity() {
         }
 
         proceedWithLaunch()
+    }
+
+    private fun isNotificationListenerEnabled(): Boolean {
+        val componentName = ComponentName(this, MediaService::class.java)
+        val enabledListeners = Settings.Secure.getString(contentResolver, "enabled_notification_listeners")
+        return enabledListeners?.contains(componentName.flattenToString()) == true
     }
 
     private fun checkAndRequestPermissions(): Boolean {
@@ -207,6 +222,11 @@ class MainActivity : Activity() {
     }
 
     private fun sendMediaPlayKey() {
+        if (MediaService.isPlayerActive(targetPackage, this)) {
+            Log.d(TAG, "Music is already active in the target player, not sending PLAY key.")
+            return
+        }
+
         Log.d(TAG, "Sending Media Key Intent: KEYCODE_MEDIA_PLAY")
         try {
             val downIntent = Intent(Intent.ACTION_MEDIA_BUTTON).apply {
