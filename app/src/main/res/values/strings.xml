@@ -3,4 +3,5 @@
     <string name="activity_name">Music</string>
     <string name="player_not_found_title">MusicProxy: Player not found</string>
     <string name="player_not_found_message">Cannot open configured player. Please check if the player is installed and if the package name and activity (* for automatic activity search) are correctly written in the config file.</string>
+    <string name="accessibility_service_description">This service is required to log all key presses for debugging and diagnostic purposes.</string>
 </resources>

