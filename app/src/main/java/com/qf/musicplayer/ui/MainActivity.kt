@@ -1,9 +1,9 @@
 package com.qf.musicplayer.ui
 
-import android.accessibilityservice.AccessibilityServiceInfo
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
+import android.content.ActivityNotFoundException
 import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
@@ -20,25 +20,32 @@ import android.util.Log
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.WindowManager
-import android.view.accessibility.AccessibilityManager
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
+import java.io.IOException
 
 class MainActivity : Activity() {
 
     companion object {
         private const val TAG = "PcmProxy"
+        private const val DEFAULT_PLAYER_PACKAGE = "com.maxmpz.audioplayer"
+        private const val DEFAULT_PLAYER_CLASS = "*"
         private const val DEFAULT_DELAY = 5L
         private const val ACTION_MODE_SWITCH = "android.intent.action.MODE_SWITCH"
         private const val PERMISSION_REQUEST_CODE = 100
+        private const val MEDIA_KEY_EVENT_DELAY = 50L
+        private const val DEBOUNCE_DELAY_MS = 2000L
+        private const val START_PLAYER_DELAY_MS = 500L
+        private const val REORDER_TO_FRONT_DELAY_MS = 350L
+        private const val CONFIG_FILE_NAME = "player.config"
     }
 
-    private val configPath = File(Environment.getExternalStorageDirectory(), "player.config").absolutePath
-    private var targetPackage: String = "com.maxmpz.audioplayer"
-    private var targetClass: String = "*"
+    // --- State ---
+    private val configPath = File(Environment.getExternalStorageDirectory(), CONFIG_FILE_NAME).absolutePath
+    private var targetPackage: String = DEFAULT_PLAYER_PACKAGE
+    private var targetClass: String = DEFAULT_PLAYER_CLASS
     private var playDelay: Long = DEFAULT_DELAY
-
     private val handler = Handler(Looper.getMainLooper())
     private var lastLaunchTime: Long = 0
     private var permissionsGranted: Boolean = false
@@ -52,20 +59,14 @@ class MainActivity : Activity() {
         }
     }
 
+    // --- Lifecycle Methods ---
+
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (intent.action == Intent.ACTION_MAIN && (!isNotificationListenerEnabled(this) || !isAccessibilityServiceEnabled(this))) {
-            Log.d(TAG, "Required permissions not enabled. Opening settings...")
-            // Open Notification Listener settings if it's not enabled.
-            if (!isNotificationListenerEnabled(this)) {
-                val intent = Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
-                startActivity(intent)
-            } else { // Otherwise, open Accessibility settings.
-                val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-                startActivity(intent)
-            }
+        if (isFirstLaunchWithMissingPermissions()) {
+            openSystemSettingsForPermissions()
             finish()
             return
         }
@@ -87,12 +88,7 @@ class MainActivity : Activity() {
     override fun onResume() {
         super.onResume()
 
-        val currentTime = SystemClock.elapsedRealtime()
-        if (currentTime - lastLaunchTime < 2000) {
-            Log.d(TAG, "onResume: Skipped (Debounce, ${currentTime - lastLaunchTime}ms)")
-            return
-        }
-        lastLaunchTime = currentTime
+        if (isDebouncing()) return
 
         Log.d(TAG, "onResume: Starting proxy logic")
 
@@ -104,25 +100,26 @@ class MainActivity : Activity() {
         proceedWithLaunch()
     }
 
-    private fun isNotificationListenerEnabled(context: Context): Boolean {
-        val componentName = ComponentName(context, MediaService::class.java)
-        val enabledListeners = Settings.Secure.getString(context.contentResolver, "enabled_notification_listeners")
-        return enabledListeners?.split(":")?.map { ComponentName.unflattenFromString(it) }?.any { it == componentName } == true
-    }
-
-    private fun isAccessibilityServiceEnabled(context: Context): Boolean {
-        val expectedComponentName = ComponentName(context, KeyLoggingService::class.java)
-        val enabledServicesSetting = Settings.Secure.getString(context.contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES)
-        return enabledServicesSetting?.split(':')?.any { ComponentName.unflattenFromString(it) == expectedComponentName } == true
-    }
-
-    private fun checkAndRequestPermissions(): Boolean {
-        if (checkSelfPermission(android.Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE), PERMISSION_REQUEST_CODE)
-            return false
+    override fun onDestroy() {
+        super.onDestroy()
+        try {
+            unregisterReceiver(modeReceiver)
+        } catch (_: Exception) {
+            // Already unregistered or failed to register
         }
-        permissionsGranted = true
-        return true
+        handler.removeCallbacksAndMessages(null)
+        Log.d(TAG, "onDestroy: Proxy destroyed")
+    }
+
+    // --- Event/Callback Overrides ---
+
+    override fun onTouchEvent(event: MotionEvent?): Boolean {
+        if (event?.action == MotionEvent.ACTION_DOWN) {
+            Log.d(TAG, "Touch detected - finishing proxy")
+            finish()
+            return true
+        }
+        return super.onTouchEvent(event)
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
@@ -138,24 +135,17 @@ class MainActivity : Activity() {
         }
     }
 
+    // --- Private Logic Flow ---
+
     private fun proceedWithLaunch() {
         loadConfig()
-        handler.postDelayed({ startPlayer() }, 500) // Small delay before starting player
-    }
-
-    override fun onTouchEvent(event: MotionEvent?): Boolean {
-        if (event?.action == MotionEvent.ACTION_DOWN) {
-            Log.d(TAG, "Touch detected - finishing proxy")
-            finish()
-            return true
-        }
-        return super.onTouchEvent(event)
+        handler.postDelayed({ startPlayer() }, START_PLAYER_DELAY_MS)
     }
 
     @SuppressLint("QueryPermissionsNeeded")
     private fun startPlayer() {
         if (targetPackage.isEmpty() || targetPackage == packageName) {
-            Log.e(TAG, "Invalid target package")
+            Log.e(TAG, "Invalid target package specified")
             finish()
             return
         }
@@ -169,45 +159,143 @@ class MainActivity : Activity() {
         try {
             Log.d(TAG, "Launching Target: $targetPackage")
 
-            val intent: Intent? = if (targetClass == "*" || targetClass.isEmpty()) {
-                packageManager.getLaunchIntentForPackage(targetPackage)
-            } else {
-                Intent().setComponent(ComponentName(targetPackage, targetClass))
-            }
-
-            if (intent == null) {
+            val launchIntent = getLaunchIntentForPlayer()
+            if (launchIntent == null) {
                 Log.e(TAG, "Failed to get launch intent for $targetPackage")
                 finish()
                 return
             }
 
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            startActivity(intent)
+            launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            startActivity(launchIntent)
             Log.d(TAG, "Player launched successfully")
 
-            // Bring our proxy activity back to the front to be "on top" for the carousel.
-            handler.postDelayed({
-                Log.d(TAG, "Bringing proxy back to the front.")
-                val selfIntent = Intent(this, MainActivity::class.java)
-                selfIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
-                startActivity(selfIntent)
-            }, 350) // A small delay to let the player launch.
-
+            bringProxyToFront()
             proceedAfterLaunch()
 
+        } catch (e: ActivityNotFoundException) {
+            Log.e(TAG, "Failed to launch activity for player. Is targetClass '$targetClass' correct?", e)
+            finish()
+        } catch (e: SecurityException) {
+            Log.e(TAG, "Security exception while launching player.", e)
+            finish()
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to launch player", e)
+            Log.e(TAG, "An unexpected error occurred while launching player.", e)
             finish()
         }
     }
 
-    private fun showPlayerNotFoundDialog() {
-        AlertDialog.Builder(this)
-            .setTitle(getString(R.string.player_not_found_title))
-            .setMessage(getString(R.string.player_not_found_message))
-            .setPositiveButton(android.R.string.ok) { _, _ -> finish() }
-            .setOnCancelListener { finish() }
-            .show()
+    private fun bringProxyToFront() {
+        handler.postDelayed({
+            Log.d(TAG, "Bringing proxy back to the front.")
+            val selfIntent = Intent(this, MainActivity::class.java)
+            selfIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+            startActivity(selfIntent)
+        }, REORDER_TO_FRONT_DELAY_MS)
+    }
+
+    private fun proceedAfterLaunch() {
+        Log.d(TAG, "Scheduling PLAY command.")
+        schedulePlayCommand()
+    }
+
+    private fun schedulePlayCommand() {
+        if (playDelay <= 0L) {
+            Log.d(TAG, "Play delay is 0, skipping auto-play.")
+            return
+        }
+
+        val totalDelay = playDelay * 100L
+        Log.d(TAG, "Scheduling PLAY in ${totalDelay}ms")
+        handler.postDelayed({ sendMediaPlayKey() }, totalDelay)
+    }
+
+    private fun sendMediaPlayKey() {
+        if (MediaService.isPlayerActive(targetPackage, this)) {
+            Log.d(TAG, "Music is already active in the target player, not sending PLAY key.")
+            return
+        }
+
+        Log.d(TAG, "Sending Media Key Intent: KEYCODE_MEDIA_PLAY")
+        try {
+            sendBroadcast(createMediaKeyIntent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PLAY))
+            Log.d(TAG, "Media key DOWN dispatched to $targetPackage")
+
+            handler.postDelayed({
+                sendBroadcast(createMediaKeyIntent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_PLAY))
+                Log.d(TAG, "Media key UP dispatched to $targetPackage")
+            }, MEDIA_KEY_EVENT_DELAY)
+
+        } catch (e: Exception) {
+            Log.e(TAG, "Error sending media key intent", e)
+        }
+    }
+
+    // --- Utility Methods ---
+
+    private fun loadConfig() {
+        if (!permissionsGranted) {
+            Log.w(TAG, "Read permission not granted, using defaults.")
+            return
+        }
+        val file = File(configPath)
+        if (!file.exists()) {
+            Log.d(TAG, "Config file not found. Using defaults.")
+            return
+        }
+
+        try {
+            BufferedReader(FileReader(file)).use { br ->
+                val pkg = br.readLine()?.trim()
+                val cls = br.readLine()?.trim()
+                val d = br.readLine()?.trim()
+
+                if (!pkg.isNullOrEmpty()) targetPackage = pkg
+                if (!cls.isNullOrEmpty()) targetClass = cls
+                playDelay = d?.toLongOrNull() ?: DEFAULT_DELAY
+            }
+            Log.d(TAG, "Config loaded: pkg=$targetPackage, cls=$targetClass, delay=${playDelay * 100}ms")
+        } catch (e: IOException) {
+            Log.e(TAG, "I/O error reading config file.", e)
+        } catch (e: SecurityException) {
+            Log.e(TAG, "Security error reading config file.", e)
+        } catch (e: Exception) {
+            Log.e(TAG, "Unexpected error reading config file.", e)
+        }
+    }
+
+    private fun checkAndRequestPermissions(): Boolean {
+        if (checkSelfPermission(android.Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE), PERMISSION_REQUEST_CODE)
+            return false
+        }
+        permissionsGranted = true
+        return true
+    }
+
+    private fun isDebouncing(): Boolean {
+        val currentTime = SystemClock.elapsedRealtime()
+        if (currentTime - lastLaunchTime < DEBOUNCE_DELAY_MS) {
+            Log.d(TAG, "onResume: Skipped (Debounce, ${currentTime - lastLaunchTime}ms)")
+            return true
+        }
+        lastLaunchTime = currentTime
+        return false
+    }
+
+    private fun getLaunchIntentForPlayer(): Intent? {
+        return if (targetClass == "*" || targetClass.isEmpty()) {
+            packageManager.getLaunchIntentForPackage(targetPackage)
+        } else {
+            Intent().setComponent(ComponentName(targetPackage, targetClass))
+        }
+    }
+
+    private fun createMediaKeyIntent(action: Int, keyCode: Int): Intent {
+        return Intent(Intent.ACTION_MEDIA_BUTTON).apply {
+            `package` = targetPackage
+            putExtra(Intent.EXTRA_KEY_EVENT, KeyEvent(action, keyCode))
+        }
     }
 
     private fun isPackageInstalled(packageName: String): Boolean {
@@ -219,84 +307,41 @@ class MainActivity : Activity() {
         }
     }
 
-    private fun proceedAfterLaunch() {
-        Log.d(TAG, "Scheduling PLAY command.")
-        schedulePlayCommand()
-    }
-
-    private fun schedulePlayCommand() {
-        if (playDelay > 0L) {
-            val totalDelay = playDelay * 100L
-            Log.d(TAG, "Scheduling PLAY in ${totalDelay}ms")
-
-            handler.postDelayed({ sendMediaPlayKey() }, totalDelay)
-        } else {
-            Log.d(TAG, "Play delay is 0, skipping auto-play.")
-        }
-    }
-
-    private fun sendMediaPlayKey() {
-        if (MediaService.isPlayerActive(targetPackage, this)) {
-            Log.d(TAG, "Music is already active in the target player, not sending PLAY key.")
+    private fun showPlayerNotFoundDialog() {
+        if (isFinishing || isDestroyed) {
             return
         }
-
-        Log.d(TAG, "Sending Media Key Intent: KEYCODE_MEDIA_PLAY")
-        try {
-            val downIntent = Intent(Intent.ACTION_MEDIA_BUTTON).apply {
-                `package` = targetPackage
-                putExtra(Intent.EXTRA_KEY_EVENT, KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PLAY))
-            }
-            sendBroadcast(downIntent)
-
-            Thread.sleep(50)
-
-            val upIntent = Intent(Intent.ACTION_MEDIA_BUTTON).apply {
-                `package` = targetPackage
-                putExtra(Intent.EXTRA_KEY_EVENT, KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_PLAY))
-            }
-            sendBroadcast(upIntent)
-
-            Log.d(TAG, "Media key intent dispatched successfully to $targetPackage")
-        } catch (e: Exception) {
-            Log.e(TAG, "Error sending media key intent", e)
-        }
+        AlertDialog.Builder(this)
+            .setTitle(getString(R.string.player_not_found_title))
+            .setMessage(getString(R.string.player_not_found_message))
+            .setPositiveButton(android.R.string.ok) { _, _ -> finish() }
+            .setOnCancelListener { finish() }
+            .show()
     }
 
-    private fun loadConfig() {
-        if (!permissionsGranted) {
-            Log.w(TAG, "Permissions not granted, using defaults.")
-            return
-        }
-        val file = File(configPath)
-        if (file.exists()) {
-            try {
-                BufferedReader(FileReader(file)).use { br ->
-                    val pkg = br.readLine()?.trim()
-                    val cls = br.readLine()?.trim()
-                    val d = br.readLine()?.trim()
+    private fun isFirstLaunchWithMissingPermissions(): Boolean {
+        return intent.action == Intent.ACTION_MAIN && (!isNotificationListenerEnabled(this) || !isAccessibilityServiceEnabled(this))
+    }
 
-                    if (!pkg.isNullOrEmpty()) targetPackage = pkg
-                    if (!cls.isNullOrEmpty()) targetClass = cls
-                    playDelay = d?.toLongOrNull() ?: DEFAULT_DELAY
-                }
-                Log.d(TAG, "Config loaded: pkg=$targetPackage, cls=$targetClass, delay=${playDelay * 100}ms")
-            } catch (e: Exception) {
-                Log.e(TAG, "ERROR reading config file!", e)
-            }
+    private fun openSystemSettingsForPermissions() {
+        Log.d(TAG, "Required services not enabled. Opening settings...")
+        val intent = if (!isNotificationListenerEnabled(this)) {
+            Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
         } else {
-            Log.d(TAG, "Config file not found. Using defaults.")
+            Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
         }
+        startActivity(intent)
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        try {
-            unregisterReceiver(modeReceiver)
-        } catch (_: Exception) {
-            // Already unregistered
-        }
-        handler.removeCallbacksAndMessages(null)
-        Log.d(TAG, "onDestroy: Proxy destroyed")
+    private fun isNotificationListenerEnabled(context: Context): Boolean {
+        val componentName = ComponentName(context, MediaService::class.java)
+        val enabledListeners = Settings.Secure.getString(context.contentResolver, "enabled_notification_listeners")
+        return enabledListeners?.contains(componentName.flattenToString()) == true
+    }
+
+    private fun isAccessibilityServiceEnabled(context: Context): Boolean {
+        val expectedComponentName = ComponentName(context, KeyLoggingService::class.java)
+        val enabledServicesSetting = Settings.Secure.getString(context.contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES)
+        return enabledServicesSetting?.contains(expectedComponentName.flattenToString()) == true
     }
 }
