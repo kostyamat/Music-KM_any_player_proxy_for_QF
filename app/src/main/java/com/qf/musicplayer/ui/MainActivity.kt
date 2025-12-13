@@ -187,9 +187,8 @@ class MainActivity : Activity() {
                 bringProxyToFront()
                 proceedAfterLaunch()
             } else {
-                Log.d(TAG, "Direct launch: Finishing proxy.")
-                proceedAfterLaunch() // Schedule play key
-                finish() // And exit
+                Log.d(TAG, "Direct launch: Scheduling play key and preparing to finish.")
+                proceedAfterLaunch() // This will now handle the finish()
             }
 
         } catch (e: ActivityNotFoundException) {
@@ -221,6 +220,10 @@ class MainActivity : Activity() {
     private fun schedulePlayCommand() {
         if (playDelay <= 0L) {
             Log.d(TAG, "Play delay is 0, skipping auto-play.")
+            if (!isCarouselLaunch) {
+                Log.d(TAG, "Direct launch: Finishing proxy immediately.")
+                finish()
+            }
             return
         }
 
@@ -232,6 +235,10 @@ class MainActivity : Activity() {
     private fun sendMediaPlayKey() {
         if (MediaService.isPlayerActive(targetPackage, this)) {
             Log.d(TAG, "Music is already active in the target player, not sending PLAY key.")
+            if (!isCarouselLaunch) {
+                Log.d(TAG, "Direct launch: Music already playing, finishing proxy.")
+                finish()
+            }
             return
         }
 
@@ -243,10 +250,17 @@ class MainActivity : Activity() {
             handler.postDelayed({
                 sendBroadcast(createMediaKeyIntent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_PLAY))
                 Log.d(TAG, "Media key UP dispatched to $targetPackage")
+                if (!isCarouselLaunch) {
+                    Log.d(TAG, "Direct launch: Play key sent, finishing proxy.")
+                    finish()
+                }
             }, MEDIA_KEY_EVENT_DELAY)
 
         } catch (e: Exception) {
             Log.e(TAG, "Error sending media key intent", e)
+            if (!isCarouselLaunch) {
+                finish() // Finish on error too
+            }
         }
     }
 
@@ -366,16 +380,12 @@ class MainActivity : Activity() {
     }
 
     private fun isFirstLaunchWithMissingPermissions(): Boolean {
-        return intent.action == Intent.ACTION_MAIN && (!isNotificationListenerEnabled(this) || !isAccessibilityServiceEnabled(this))
+        return intent.action == Intent.ACTION_MAIN && !isNotificationListenerEnabled(this)
     }
 
     private fun openSystemSettingsForPermissions() {
-        Log.d(TAG, "Required services not enabled. Opening settings...")
-        val intent = if (!isNotificationListenerEnabled(this)) {
-            Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
-        } else {
-            Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-        }
+        Log.d(TAG, "Required Notification Listener service not enabled. Opening settings...")
+        val intent = Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
         startActivity(intent)
     }
 
@@ -383,11 +393,5 @@ class MainActivity : Activity() {
         val componentName = ComponentName(context, MediaService::class.java)
         val enabledListeners = Settings.Secure.getString(context.contentResolver, "enabled_notification_listeners")
         return enabledListeners?.contains(componentName.flattenToString()) == true
-    }
-
-    private fun isAccessibilityServiceEnabled(context: Context): Boolean {
-        val expectedComponentName = ComponentName(context, KeyLoggingService::class.java)
-        val enabledServicesSetting = Settings.Secure.getString(context.contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES)
-        return enabledServicesSetting?.contains(expectedComponentName.flattenToString()) == true
     }
 }
