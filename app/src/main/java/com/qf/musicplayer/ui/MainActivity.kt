@@ -39,6 +39,7 @@ class MainActivity : Activity() {
         private const val START_PLAYER_DELAY_MS = 500L
         private const val REORDER_TO_FRONT_DELAY_MS = 350L
         private const val CONFIG_FILE_NAME = "player.config"
+        private const val CAROUSEL_REFERRER = "com.qf.framework"
     }
 
     // --- State ---
@@ -49,6 +50,7 @@ class MainActivity : Activity() {
     private val handler = Handler(Looper.getMainLooper())
     private var lastLaunchTime: Long = 0
     private var permissionsGranted: Boolean = false
+    private var isCarouselLaunch = false
 
     private val modeReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -64,6 +66,9 @@ class MainActivity : Activity() {
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        updateLaunchSource(intent)
+        logLaunchIntent(intent)
 
         if (isFirstLaunchWithMissingPermissions()) {
             openSystemSettingsForPermissions()
@@ -83,6 +88,13 @@ class MainActivity : Activity() {
         }
 
         Log.d(TAG, "onCreate: Transparent Proxy Created")
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        setIntent(intent) // Update the activity's intent
+        updateLaunchSource(intent)
+        logLaunchIntent(intent)
     }
 
     override fun onResume() {
@@ -170,8 +182,15 @@ class MainActivity : Activity() {
             startActivity(launchIntent)
             Log.d(TAG, "Player launched successfully")
 
-            bringProxyToFront()
-            proceedAfterLaunch()
+            if (isCarouselLaunch) {
+                Log.d(TAG, "Carousel launch: Bringing proxy to front.")
+                bringProxyToFront()
+                proceedAfterLaunch()
+            } else {
+                Log.d(TAG, "Direct launch: Finishing proxy.")
+                proceedAfterLaunch() // Schedule play key
+                finish() // And exit
+            }
 
         } catch (e: ActivityNotFoundException) {
             Log.e(TAG, "Failed to launch activity for player. Is targetClass '$targetClass' correct?", e)
@@ -232,6 +251,33 @@ class MainActivity : Activity() {
     }
 
     // --- Utility Methods ---
+    private fun updateLaunchSource(intent: Intent?) {
+        // Only update the launch source if it's a MAIN action.
+        // This prevents the REORDER_TO_FRONT intent from overwriting it.
+        if (intent?.action == Intent.ACTION_MAIN) {
+            isCarouselLaunch = referrer?.host == CAROUSEL_REFERRER
+            Log.d(TAG, "Launch source updated. IsCarousel: $isCarouselLaunch, Referrer: ${referrer?.host}")
+        }
+    }
+
+    private fun logLaunchIntent(intent: Intent?) {
+        if (intent == null) {
+            Log.d(TAG, "--- LAUNCH INTENT (null) ---")
+            return
+        }
+        Log.d(TAG, "--- LAUNCH INTENT ---")
+        Log.d(TAG, "Action: ${intent.action}")
+        Log.d(TAG, "Categories: ${intent.categories}")
+        Log.d(TAG, "Flags: ${intent.flags}")
+        Log.d(TAG, "Component: ${intent.component}")
+        Log.d(TAG, "Referrer: ${referrer}")
+        intent.extras?.let {
+            for (key in it.keySet()) {
+                Log.d(TAG, "Extra: $key = ${it.get(key)}")
+            }
+        }
+        Log.d(TAG, "---------------------")
+    }
 
     private fun loadConfig() {
         if (!permissionsGranted) {
