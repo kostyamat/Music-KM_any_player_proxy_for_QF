@@ -11,7 +11,6 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
-import android.content.pm.ResolveInfo
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -21,6 +20,7 @@ import android.util.Log
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.WindowManager
+import com.qf.musicplayer.settings.SettingsActivity
 
 class MainActivity : Activity() {
 
@@ -36,8 +36,6 @@ class MainActivity : Activity() {
 
         private const val PREFS_NAME = "PlayerProxyPrefs"
         private const val PREF_TARGET_PACKAGE = "targetPackage"
-        private const val PREF_LAUNCH_TIMESTAMPS = "launchTimestamps"
-        private const val RESET_TRIPLE_LAUNCH_MS = 3000L
     }
 
     // --- State ---
@@ -62,11 +60,15 @@ class MainActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        targetPackage = prefs.getString(PREF_TARGET_PACKAGE, null)
 
         updateLaunchSource(intent)
 
-        if (checkForResetAndShowDialogIfNeeded()) {
-            return // Stop further execution if dialog is shown
+        if (targetPackage == null) {
+            Log.d(TAG, "No target player configured. Launching Settings.")
+            startActivity(Intent(this, SettingsActivity::class.java))
+            finish()
+            return
         }
 
         if (isFirstLaunchWithMissingPermissions()) {
@@ -98,13 +100,9 @@ class MainActivity : Activity() {
     override fun onResume() {
         super.onResume()
 
-        if (isDebouncing()) return
+        if (targetPackage == null) return // Already handling this in onCreate
 
-        // If a player selection is in progress, don't launch anything.
-        if (targetPackage == null) {
-            Log.d(TAG, "onResume: No player selected, waiting for dialog.")
-            return
-        }
+        if (isDebouncing()) return
 
         Log.d(TAG, "onResume: Starting proxy logic")
         proceedWithLaunch()
@@ -135,11 +133,6 @@ class MainActivity : Activity() {
     // --- Private Logic Flow ---
 
     private fun proceedWithLaunch() {
-        targetPackage = prefs.getString(PREF_TARGET_PACKAGE, null)
-        if (targetPackage == null) {
-            showPlayerSelectionDialog()
-            return
-        }
         handler.postDelayed({ startPlayer() }, START_PLAYER_DELAY_MS)
     }
 
@@ -155,7 +148,7 @@ class MainActivity : Activity() {
 
         if (!isPackageInstalled(currentTarget)) {
             Log.e(TAG, "Target player not installed: $currentTarget")
-            showPlayerNotFoundDialog(isReset = true) // Offer to reset choice
+            showPlayerNotFoundDialog()
             return
         }
 
@@ -245,65 +238,6 @@ class MainActivity : Activity() {
         }
     }
 
-    private fun checkForResetAndShowDialogIfNeeded(): Boolean {
-        val timestamps = prefs.getString(PREF_LAUNCH_TIMESTAMPS, "")!!.split(",").filter { it.isNotBlank() }.toMutableList()
-        val currentTime = System.currentTimeMillis()
-        timestamps.add(currentTime.toString())
-
-        while (timestamps.size > 3) {
-            timestamps.removeAt(0)
-        }
-
-        var isResetTriggered = false
-        if (timestamps.size == 3) {
-            val first = timestamps.first().toLong()
-            val last = timestamps.last().toLong()
-            if (last - first < RESET_TRIPLE_LAUNCH_MS) {
-                Log.d(TAG, "Triple launch reset triggered!")
-                isResetTriggered = true
-                timestamps.clear()
-            }
-        }
-
-        prefs.edit().putString(PREF_LAUNCH_TIMESTAMPS, timestamps.joinToString(",")).apply()
-
-        targetPackage = prefs.getString(PREF_TARGET_PACKAGE, null)
-        if (isResetTriggered || targetPackage == null) {
-            showPlayerSelectionDialog()
-            return true
-        }
-        return false
-    }
-
-    @SuppressLint("QueryPermissionsNeeded")
-    private fun showPlayerSelectionDialog() {
-        val musicApps = getInstalledMusicPlayers()
-        val appNames = musicApps.map { it.loadLabel(packageManager) }.toTypedArray()
-
-        AlertDialog.Builder(this)
-            .setTitle("Choose a Music Player")
-            .setItems(appNames) { dialog, which ->
-                val selectedPackage = musicApps[which].activityInfo.packageName
-                Log.d(TAG, "Player selected: $selectedPackage")
-                prefs.edit().putString(PREF_TARGET_PACKAGE, selectedPackage).apply()
-                targetPackage = selectedPackage
-                dialog.dismiss()
-                // Relaunch the logic now that we have a player.
-                proceedWithLaunch()
-            }
-            .setOnCancelListener { 
-                Log.d(TAG, "Player selection cancelled.")
-                finish() 
-            }
-            .show()
-    }
-    
-    @SuppressLint("QueryPermissionsNeeded")
-    private fun getInstalledMusicPlayers(): List<ResolveInfo> {
-        val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_APP_MUSIC)
-        return packageManager.queryIntentActivities(intent, 0)
-    }
-
     private fun isDebouncing(): Boolean {
         val currentTime = SystemClock.elapsedRealtime()
         if (currentTime - lastLaunchTime < DEBOUNCE_DELAY_MS) {
@@ -329,24 +263,19 @@ class MainActivity : Activity() {
         }
     }
 
-    private fun showPlayerNotFoundDialog(isReset: Boolean = false) {
+    private fun showPlayerNotFoundDialog() {
         if (isFinishing || isDestroyed) return
 
-        val builder = AlertDialog.Builder(this)
-            .setTitle(getString(R.string.player_not_found_title))
-            .setMessage(getString(R.string.player_not_found_message))
-
-        if (isReset) {
-            builder.setPositiveButton("Choose new player") { _, _ ->
-                prefs.edit().remove(PREF_TARGET_PACKAGE).apply()
-                showPlayerSelectionDialog()
+        AlertDialog.Builder(this)
+            .setTitle("Target Player Not Found")
+            .setMessage("The selected player is no longer installed. Please choose another one from the Proxy Settings.")
+            .setPositiveButton("Open Settings") { _, _ ->
+                startActivity(Intent(this, SettingsActivity::class.java))
+                finish()
             }
-            builder.setNegativeButton(android.R.string.cancel) { _, _ -> finish() }
-        } else {
-            builder.setPositiveButton(android.R.string.ok) { _, _ -> finish() }
-        }
-
-        builder.setOnCancelListener { finish() }.show()
+            .setNegativeButton(android.R.string.cancel) { _, _ -> finish() }
+            .setOnCancelListener { finish() }
+            .show()
     }
 
     private fun isFirstLaunchWithMissingPermissions(): Boolean {
