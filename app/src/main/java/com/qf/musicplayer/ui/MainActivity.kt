@@ -9,9 +9,10 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.content.pm.ResolveInfo
 import android.os.Bundle
-import android.os.Environment
 import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
@@ -20,36 +21,30 @@ import android.util.Log
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.WindowManager
-import java.io.BufferedReader
-import java.io.File
-import java.io.FileReader
-import java.io.IOException
 
 class MainActivity : Activity() {
 
     companion object {
         private const val TAG = "PcmProxy"
-        private const val DEFAULT_PLAYER_PACKAGE = "com.maxmpz.audioplayer"
-        private const val DEFAULT_PLAYER_CLASS = "*"
         private const val DEFAULT_DELAY = 5L
         private const val ACTION_MODE_SWITCH = "android.intent.action.MODE_SWITCH"
-        private const val PERMISSION_REQUEST_CODE = 100
         private const val MEDIA_KEY_EVENT_DELAY = 50L
         private const val DEBOUNCE_DELAY_MS = 2000L
         private const val START_PLAYER_DELAY_MS = 500L
         private const val REORDER_TO_FRONT_DELAY_MS = 350L
-        private const val CONFIG_FILE_NAME = "player.config"
         private const val CAROUSEL_REFERRER = "com.qf.framework"
+
+        private const val PREFS_NAME = "PlayerProxyPrefs"
+        private const val PREF_TARGET_PACKAGE = "targetPackage"
+        private const val PREF_LAUNCH_TIMESTAMPS = "launchTimestamps"
+        private const val RESET_TRIPLE_LAUNCH_MS = 3000L
     }
 
     // --- State ---
-    private val configPath = File(Environment.getExternalStorageDirectory(), CONFIG_FILE_NAME).absolutePath
-    private var targetPackage: String = DEFAULT_PLAYER_PACKAGE
-    private var targetClass: String = DEFAULT_PLAYER_CLASS
-    private var playDelay: Long = DEFAULT_DELAY
+    private lateinit var prefs: SharedPreferences
+    private var targetPackage: String? = null
     private val handler = Handler(Looper.getMainLooper())
     private var lastLaunchTime: Long = 0
-    private var permissionsGranted: Boolean = false
     private var isCarouselLaunch = false
 
     private val modeReceiver = object : BroadcastReceiver() {
@@ -66,9 +61,13 @@ class MainActivity : Activity() {
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
         updateLaunchSource(intent)
-        logLaunchIntent(intent)
+
+        if (checkForResetAndShowDialogIfNeeded()) {
+            return // Stop further execution if dialog is shown
+        }
 
         if (isFirstLaunchWithMissingPermissions()) {
             openSystemSettingsForPermissions()
@@ -92,9 +91,8 @@ class MainActivity : Activity() {
 
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
-        setIntent(intent) // Update the activity's intent
+        setIntent(intent)
         updateLaunchSource(intent)
-        logLaunchIntent(intent)
     }
 
     override fun onResume() {
@@ -102,13 +100,13 @@ class MainActivity : Activity() {
 
         if (isDebouncing()) return
 
-        Log.d(TAG, "onResume: Starting proxy logic")
-
-        if (!checkAndRequestPermissions()) {
-            Log.d(TAG, "Waiting for permissions...")
+        // If a player selection is in progress, don't launch anything.
+        if (targetPackage == null) {
+            Log.d(TAG, "onResume: No player selected, waiting for dialog.")
             return
         }
 
+        Log.d(TAG, "onResume: Starting proxy logic")
         proceedWithLaunch()
     }
 
@@ -117,7 +115,7 @@ class MainActivity : Activity() {
         try {
             unregisterReceiver(modeReceiver)
         } catch (_: Exception) {
-            // Already unregistered or failed to register
+            // Already unregistered
         }
         handler.removeCallbacksAndMessages(null)
         Log.d(TAG, "onDestroy: Proxy destroyed")
@@ -134,46 +132,39 @@ class MainActivity : Activity() {
         return super.onTouchEvent(event)
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == PERMISSION_REQUEST_CODE) {
-            permissionsGranted = grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED
-            if (permissionsGranted) {
-                Log.d(TAG, "Permission GRANTED by user")
-            } else {
-                Log.e(TAG, "Permission DENIED by user, using defaults")
-            }
-            proceedWithLaunch()
-        }
-    }
-
     // --- Private Logic Flow ---
 
     private fun proceedWithLaunch() {
-        loadConfig()
+        targetPackage = prefs.getString(PREF_TARGET_PACKAGE, null)
+        if (targetPackage == null) {
+            showPlayerSelectionDialog()
+            return
+        }
         handler.postDelayed({ startPlayer() }, START_PLAYER_DELAY_MS)
     }
 
     @SuppressLint("QueryPermissionsNeeded")
     private fun startPlayer() {
-        if (targetPackage.isEmpty() || targetPackage == packageName) {
+        val currentTarget = targetPackage ?: return
+
+        if (currentTarget.isEmpty() || currentTarget == packageName) {
             Log.e(TAG, "Invalid target package specified")
             finish()
             return
         }
 
-        if (!isPackageInstalled(targetPackage)) {
-            Log.e(TAG, "Target player not installed: $targetPackage")
-            showPlayerNotFoundDialog()
+        if (!isPackageInstalled(currentTarget)) {
+            Log.e(TAG, "Target player not installed: $currentTarget")
+            showPlayerNotFoundDialog(isReset = true) // Offer to reset choice
             return
         }
 
         try {
-            Log.d(TAG, "Launching Target: $targetPackage")
+            Log.d(TAG, "Launching Target: $currentTarget")
 
-            val launchIntent = getLaunchIntentForPlayer()
+            val launchIntent = packageManager.getLaunchIntentForPackage(currentTarget)
             if (launchIntent == null) {
-                Log.e(TAG, "Failed to get launch intent for $targetPackage")
+                Log.e(TAG, "Failed to get launch intent for $currentTarget")
                 finish()
                 return
             }
@@ -185,18 +176,12 @@ class MainActivity : Activity() {
             if (isCarouselLaunch) {
                 Log.d(TAG, "Carousel launch: Bringing proxy to front.")
                 bringProxyToFront()
-                proceedAfterLaunch()
+                schedulePlayCommand()
             } else {
                 Log.d(TAG, "Direct launch: Scheduling play key and preparing to finish.")
-                proceedAfterLaunch() // This will now handle the finish()
+                schedulePlayCommand()
             }
 
-        } catch (e: ActivityNotFoundException) {
-            Log.e(TAG, "Failed to launch activity for player. Is targetClass '$targetClass' correct?", e)
-            finish()
-        } catch (e: SecurityException) {
-            Log.e(TAG, "Security exception while launching player.", e)
-            finish()
         } catch (e: Exception) {
             Log.e(TAG, "An unexpected error occurred while launching player.", e)
             finish()
@@ -212,28 +197,16 @@ class MainActivity : Activity() {
         }, REORDER_TO_FRONT_DELAY_MS)
     }
 
-    private fun proceedAfterLaunch() {
-        Log.d(TAG, "Scheduling PLAY command.")
-        schedulePlayCommand()
-    }
-
     private fun schedulePlayCommand() {
-        if (playDelay <= 0L) {
-            Log.d(TAG, "Play delay is 0, skipping auto-play.")
-            if (!isCarouselLaunch) {
-                Log.d(TAG, "Direct launch: Finishing proxy immediately.")
-                finish()
-            }
-            return
-        }
-
-        val totalDelay = playDelay * 100L
+        val totalDelay = DEFAULT_DELAY * 100L
         Log.d(TAG, "Scheduling PLAY in ${totalDelay}ms")
         handler.postDelayed({ sendMediaPlayKey() }, totalDelay)
     }
 
     private fun sendMediaPlayKey() {
-        if (MediaService.isPlayerActive(targetPackage, this)) {
+        val currentTarget = targetPackage ?: return
+
+        if (MediaService.isPlayerActive(currentTarget, this)) {
             Log.d(TAG, "Music is already active in the target player, not sending PLAY key.")
             if (!isCarouselLaunch) {
                 Log.d(TAG, "Direct launch: Music already playing, finishing proxy.")
@@ -245,11 +218,11 @@ class MainActivity : Activity() {
         Log.d(TAG, "Sending Media Key Intent: KEYCODE_MEDIA_PLAY")
         try {
             sendBroadcast(createMediaKeyIntent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PLAY))
-            Log.d(TAG, "Media key DOWN dispatched to $targetPackage")
+            Log.d(TAG, "Media key DOWN dispatched to $currentTarget")
 
             handler.postDelayed({
                 sendBroadcast(createMediaKeyIntent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_PLAY))
-                Log.d(TAG, "Media key UP dispatched to $targetPackage")
+                Log.d(TAG, "Media key UP dispatched to $currentTarget")
                 if (!isCarouselLaunch) {
                     Log.d(TAG, "Direct launch: Play key sent, finishing proxy.")
                     finish()
@@ -259,96 +232,85 @@ class MainActivity : Activity() {
         } catch (e: Exception) {
             Log.e(TAG, "Error sending media key intent", e)
             if (!isCarouselLaunch) {
-                finish() // Finish on error too
+                finish()
             }
         }
     }
 
     // --- Utility Methods ---
+
     private fun updateLaunchSource(intent: Intent?) {
-        // Only update the launch source if it's a MAIN action.
-        // This prevents the REORDER_TO_FRONT intent from overwriting it.
         if (intent?.action == Intent.ACTION_MAIN) {
             isCarouselLaunch = referrer?.host == CAROUSEL_REFERRER
-            Log.d(TAG, "Launch source updated. IsCarousel: $isCarouselLaunch, Referrer: ${referrer?.host}")
         }
     }
 
-    private fun logLaunchIntent(intent: Intent?) {
-        if (intent == null) {
-            Log.d(TAG, "--- LAUNCH INTENT (null) ---")
-            return
+    private fun checkForResetAndShowDialogIfNeeded(): Boolean {
+        val timestamps = prefs.getString(PREF_LAUNCH_TIMESTAMPS, "")!!.split(",").filter { it.isNotBlank() }.toMutableList()
+        val currentTime = System.currentTimeMillis()
+        timestamps.add(currentTime.toString())
+
+        while (timestamps.size > 3) {
+            timestamps.removeAt(0)
         }
-        Log.d(TAG, "--- LAUNCH INTENT ---")
-        Log.d(TAG, "Action: ${intent.action}")
-        Log.d(TAG, "Categories: ${intent.categories}")
-        Log.d(TAG, "Flags: ${intent.flags}")
-        Log.d(TAG, "Component: ${intent.component}")
-        Log.d(TAG, "Referrer: ${referrer}")
-        intent.extras?.let {
-            for (key in it.keySet()) {
-                Log.d(TAG, "Extra: $key = ${it.get(key)}")
+
+        var isResetTriggered = false
+        if (timestamps.size == 3) {
+            val first = timestamps.first().toLong()
+            val last = timestamps.last().toLong()
+            if (last - first < RESET_TRIPLE_LAUNCH_MS) {
+                Log.d(TAG, "Triple launch reset triggered!")
+                isResetTriggered = true
+                timestamps.clear()
             }
         }
-        Log.d(TAG, "---------------------")
+
+        prefs.edit().putString(PREF_LAUNCH_TIMESTAMPS, timestamps.joinToString(",")).apply()
+
+        targetPackage = prefs.getString(PREF_TARGET_PACKAGE, null)
+        if (isResetTriggered || targetPackage == null) {
+            showPlayerSelectionDialog()
+            return true
+        }
+        return false
     }
 
-    private fun loadConfig() {
-        if (!permissionsGranted) {
-            Log.w(TAG, "Read permission not granted, using defaults.")
-            return
-        }
-        val file = File(configPath)
-        if (!file.exists()) {
-            Log.d(TAG, "Config file not found. Using defaults.")
-            return
-        }
+    @SuppressLint("QueryPermissionsNeeded")
+    private fun showPlayerSelectionDialog() {
+        val musicApps = getInstalledMusicPlayers()
+        val appNames = musicApps.map { it.loadLabel(packageManager) }.toTypedArray()
 
-        try {
-            BufferedReader(FileReader(file)).use { br ->
-                val pkg = br.readLine()?.trim()
-                val cls = br.readLine()?.trim()
-                val d = br.readLine()?.trim()
-
-                if (!pkg.isNullOrEmpty()) targetPackage = pkg
-                if (!cls.isNullOrEmpty()) targetClass = cls
-                playDelay = d?.toLongOrNull() ?: DEFAULT_DELAY
+        AlertDialog.Builder(this)
+            .setTitle("Choose a Music Player")
+            .setItems(appNames) { dialog, which ->
+                val selectedPackage = musicApps[which].activityInfo.packageName
+                Log.d(TAG, "Player selected: $selectedPackage")
+                prefs.edit().putString(PREF_TARGET_PACKAGE, selectedPackage).apply()
+                targetPackage = selectedPackage
+                dialog.dismiss()
+                // Relaunch the logic now that we have a player.
+                proceedWithLaunch()
             }
-            Log.d(TAG, "Config loaded: pkg=$targetPackage, cls=$targetClass, delay=${playDelay * 100}ms")
-        } catch (e: IOException) {
-            Log.e(TAG, "I/O error reading config file.", e)
-        } catch (e: SecurityException) {
-            Log.e(TAG, "Security error reading config file.", e)
-        } catch (e: Exception) {
-            Log.e(TAG, "Unexpected error reading config file.", e)
-        }
+            .setOnCancelListener { 
+                Log.d(TAG, "Player selection cancelled.")
+                finish() 
+            }
+            .show()
     }
-
-    private fun checkAndRequestPermissions(): Boolean {
-        if (checkSelfPermission(android.Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE), PERMISSION_REQUEST_CODE)
-            return false
-        }
-        permissionsGranted = true
-        return true
+    
+    @SuppressLint("QueryPermissionsNeeded")
+    private fun getInstalledMusicPlayers(): List<ResolveInfo> {
+        val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_APP_MUSIC)
+        return packageManager.queryIntentActivities(intent, 0)
     }
 
     private fun isDebouncing(): Boolean {
         val currentTime = SystemClock.elapsedRealtime()
         if (currentTime - lastLaunchTime < DEBOUNCE_DELAY_MS) {
-            Log.d(TAG, "onResume: Skipped (Debounce, ${currentTime - lastLaunchTime}ms)")
             return true
         }
         lastLaunchTime = currentTime
         return false
-    }
-
-    private fun getLaunchIntentForPlayer(): Intent? {
-        return if (targetClass == "*" || targetClass.isEmpty()) {
-            packageManager.getLaunchIntentForPackage(targetPackage)
-        } else {
-            Intent().setComponent(ComponentName(targetPackage, targetClass))
-        }
     }
 
     private fun createMediaKeyIntent(action: Int, keyCode: Int): Intent {
@@ -367,16 +329,24 @@ class MainActivity : Activity() {
         }
     }
 
-    private fun showPlayerNotFoundDialog() {
-        if (isFinishing || isDestroyed) {
-            return
-        }
-        AlertDialog.Builder(this)
+    private fun showPlayerNotFoundDialog(isReset: Boolean = false) {
+        if (isFinishing || isDestroyed) return
+
+        val builder = AlertDialog.Builder(this)
             .setTitle(getString(R.string.player_not_found_title))
             .setMessage(getString(R.string.player_not_found_message))
-            .setPositiveButton(android.R.string.ok) { _, _ -> finish() }
-            .setOnCancelListener { finish() }
-            .show()
+
+        if (isReset) {
+            builder.setPositiveButton("Choose new player") { _, _ ->
+                prefs.edit().remove(PREF_TARGET_PACKAGE).apply()
+                showPlayerSelectionDialog()
+            }
+            builder.setNegativeButton(android.R.string.cancel) { _, _ -> finish() }
+        } else {
+            builder.setPositiveButton(android.R.string.ok) { _, _ -> finish() }
+        }
+
+        builder.setOnCancelListener { finish() }.show()
     }
 
     private fun isFirstLaunchWithMissingPermissions(): Boolean {
