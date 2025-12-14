@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Music-KM</string>
+    <string name="settings_activity_label">Ètò Music-KM</string>
+
+    <!-- MainActivity -->
+    <string name="player_not_found_title">A kò rí Ẹrọ orin</string>
+    <string name="player_not_found_message">Ẹrọ orin tí a yàn kò sí mọ́. Jọ̀wọ́ yan òmíràn láti inú Ètò Music-KM.</string>
+    <string name="open_settings_button">Ṣí Ètò</string>
+
+    <!-- SettingsActivity -->
+    <string name="choose_player_title">Yan Ẹrọ orin Àkọ́kọ́</string>
+    <string name="no_players_found_title">A kò rí Ẹrọ orin kankan</string>
+    <string name="no_players_found_message">A kò rí àwọn ohun èlò ẹ̀rọ orin tó báramu lórí ètò rẹ.</string>
+</resources>

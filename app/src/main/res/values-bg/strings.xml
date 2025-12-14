@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Music-KM</string>
+    <string name="settings_activity_label">Настройки на Music-KM</string>
+
+    <!-- MainActivity -->
+    <string name="player_not_found_title">Плейърът не е намерен</string>
+    <string name="player_not_found_message">Избраният плейър вече не е инсталиран. Моля, изберете друг от настройките на Music-KM.</string>
+    <string name="open_settings_button">Отваряне на настройките</string>
+
+    <!-- SettingsActivity -->
+    <string name="choose_player_title">Изберете музикален плейър по подразбиране</string>
+    <string name="no_players_found_title">Няма намерени музикални плейъри</string>
+    <string name="no_players_found_message">В системата ви не са намерени съвместими приложения за музикален плейър.</string>
+</resources>

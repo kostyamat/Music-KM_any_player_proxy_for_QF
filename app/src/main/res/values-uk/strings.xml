@@ -1,6 +1,14 @@
 <resources>
-    <string name="app_name">MusicProxy</string>
-    <string name="activity_name">Музика</string>
-    <string name="player_not_found_title">MusicProxy: Плеєр не знайдено</string>
-    <string name="player_not_found_message">Не можу відкрити сконфігурований плеєр. Перевірте, чи плеєр встановлено, і чи правильно ви вписали в конфіг назву пакета та активності (* для автоматичного пошуку активності).</string>
+    <string name="app_name">Music-KM</string>
+    <string name="settings_activity_label">Налаштування Music-KM</string>
+
+    <!-- MainActivity -->
+    <string name="player_not_found_title">Плеєр не знайдено</string>
+    <string name="player_not_found_message">Обраний плеєр більше не встановлено. Будь ласка, виберіть інший у налаштуваннях Music-KM.</string>
+    <string name="open_settings_button">Відкрити налаштування</string>
+
+    <!-- SettingsActivity -->
+    <string name="choose_player_title">Виберіть музичний плеєр за замовчуванням</string>
+    <string name="no_players_found_title">Музичні плеєри не знайдено</string>
+    <string name="no_players_found_message">У вашій системі не знайдено сумісних програм для відтворення музики.</string>
 </resources>

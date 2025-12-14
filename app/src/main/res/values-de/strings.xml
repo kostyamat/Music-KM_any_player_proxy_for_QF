@@ -1,7 +1,14 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">MusicProxy</string>
-    <string name="activity_name">Musik</string>
-    <string name="player_not_found_title">MusicProxy: Player nicht gefunden</string>
-    <string name="player_not_found_message">Der konfigurierte Player kann nicht geöffnet werden. Bitte überprüfen Sie, ob der Player installiert ist und ob der Paketname und die Aktivität (* für automatische Aktivitätssuche) korrekt in der Konfigurationsdatei eingetragen sind.</string>
+    <string name="app_name">Music-KM</string>
+    <string name="settings_activity_label">Music-KM Einstellungen</string>
+
+    <!-- MainActivity -->
+    <string name="player_not_found_title">Player nicht gefunden</string>
+    <string name="player_not_found_message">Der ausgewählte Player ist nicht mehr installiert. Bitte wählen Sie einen anderen in den Music-KM-Einstellungen.</string>
+    <string name="open_settings_button">Einstellungen öffnen</string>
+
+    <!-- SettingsActivity -->
+    <string name="choose_player_title">Wählen Sie einen Standard-Musikplayer</string>
+    <string name="no_players_found_title">Keine Musikplayer gefunden</string>
+    <string name="no_players_found_message">Auf Ihrem System wurden keine kompatiblen Musik-Player-Apps gefunden.</string>
 </resources>

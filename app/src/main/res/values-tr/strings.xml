@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Music-KM</string>
+    <string name="settings_activity_label">Music-KM Ayarları</string>
+
+    <!-- MainActivity -->
+    <string name="player_not_found_title">Oynatıcı Bulunamadı</string>
+    <string name="player_not_found_message">Seçilen oynatıcı artık yüklü değil. Lütfen Music-KM Ayarları\'ndan başka birini seçin.</string>
+    <string name="open_settings_button">Ayarları Aç</string>
+
+    <!-- SettingsActivity -->
+    <string name="choose_player_title">Varsayılan bir müzik çalar seçin</string>
+    <string name="no_players_found_title">Müzik Çalar Bulunamadı</string>
+    <string name="no_players_found_message">Sisteminizde uyumlu bir müzik çalar uygulaması bulunamadı.</string>
+</resources>

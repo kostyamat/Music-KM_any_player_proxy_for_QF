@@ -267,9 +267,9 @@ class MainActivity : Activity() {
         if (isFinishing || isDestroyed) return
 
         AlertDialog.Builder(this)
-            .setTitle("Target Player Not Found")
-            .setMessage("The selected player is no longer installed. Please choose another one from the Proxy Settings.")
-            .setPositiveButton("Open Settings") { _, _ ->
+            .setTitle(getString(R.string.player_not_found_title))
+            .setMessage(getString(R.string.player_not_found_message))
+            .setPositiveButton(getString(R.string.open_settings_button)) { _, _ ->
                 startActivity(Intent(this, SettingsActivity::class.java))
                 finish()
             }

@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Music-KM</string>
+    <string name="settings_activity_label">Music-KM ترتیبات</string>
+
+    <!-- MainActivity -->
+    <string name="player_not_found_title">پلیئر نہیں ملا</string>
+    <string name="player_not_found_message">منتخب پلیئر اب انسٹال نہیں ہے۔ براہ کرم Music-KM ترتیبات سے دوسرا منتخب کریں۔</string>
+    <string name="open_settings_button">ترتیبات کھولیں</string>
+
+    <!-- SettingsActivity -->
+    <string name="choose_player_title">ایک ڈیفالٹ میوزک پلیئر منتخب کریں</string>
+    <string name="no_players_found_title">کوئی میوزک پلیئر نہیں ملا</string>
+    <string name="no_players_found_message">آپ کے سسٹم پر کوئی مطابقت رکھنے والا میوزک پلیئر ایپ نہیں ملا۔</string>
+</resources>

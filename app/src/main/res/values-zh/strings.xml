@@ -1,6 +1,14 @@
 <resources>
-    <string name="app_name">MusicProxy</string>
-    <string name="activity_name">音乐</string>
-    <string name="player_not_found_title">MusicProxy: 无法找到播放器</string>
-    <string name="player_not_found_message">无法打开配置的播放器。请检查播放器是否已安装，以及包名和活动（* 表示自动搜索活动）是否在配置文件中正确写入。</string>
+    <string name="app_name">Music-KM</string>
+    <string name="settings_activity_label">Music-KM 设置</string>
+
+    <!-- MainActivity -->
+    <string name="player_not_found_title">未找到播放器</string>
+    <string name="player_not_found_message">所选播放器未安装。请在 Music-KM 设置中选择另一个。</string>
+    <string name="open_settings_button">打开设置</string>
+
+    <!-- SettingsActivity -->
+    <string name="choose_player_title">选择默认音乐播放器</string>
+    <string name="no_players_found_title">未找到音乐播放器</string>
+    <string name="no_players_found_message">您的系统中未找到兼容的音乐播放器应用程序。</string>
 </resources>

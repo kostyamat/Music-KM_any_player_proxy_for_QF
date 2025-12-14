@@ -1,7 +1,14 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">MusicProxy</string>
-    <string name="activity_name">Música</string>
-    <string name="player_not_found_title">MusicProxy: Reprodutor não encontrado</string>
-    <string name="player_not_found_message">Não é possível abrir o reprodutor configurado. Verifique se o reprodutor está instalado e se o nome do pacote e a atividade (* para pesquisa automática de atividade) estão escritos corretamente no arquivo de configuração.</string>
+    <string name="app_name">Music-KM</string>
+    <string name="settings_activity_label">Configurações do Music-KM</string>
+
+    <!-- MainActivity -->
+    <string name="player_not_found_title">Reprodutor não encontrado</string>
+    <string name="player_not_found_message">O reprodutor selecionado não está mais instalado. Por favor, escolha outro nas Configurações do Music-KM.</string>
+    <string name="open_settings_button">Abrir Configurações</string>
+
+    <!-- SettingsActivity -->
+    <string name="choose_player_title">Escolha um reprodutor de música padrão</string>
+    <string name="no_players_found_title">Nenhum reprodutor de música encontrado</string>
+    <string name="no_players_found_message">Nenhum aplicativo de reprodutor de música compatível foi encontrado em seu sistema.</string>
 </resources>

@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Music-KM</string>
+    <string name="settings_activity_label">Nastavenia Music-KM</string>
+
+    <!-- MainActivity -->
+    <string name="player_not_found_title">Prehrávač sa nenašiel</string>
+    <string name="player_not_found_message">Zvolený prehrávač už nie je nainštalovaný. Prosím, vyberte iný v nastaveniach Music-KM.</string>
+    <string name="open_settings_button">Otvoriť nastavenia</string>
+
+    <!-- SettingsActivity -->
+    <string name="choose_player_title">Vyberte predvolený hudobný prehrávač</string>
+    <string name="no_players_found_title">Nenašli sa žiadne hudobné prehrávače</string>
+    <string name="no_players_found_message">Vo vašom systéme sa nenašli žiadne kompatibilné aplikácie na prehrávanie hudby.</string>
+</resources>

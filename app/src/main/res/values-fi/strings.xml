@@ -1,7 +1,14 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">MusicProxy</string>
-    <string name="activity_name">Musiikki</string>
-    <string name="player_not_found_title">MusicProxy: Soitinta ei löytynyt</string>
-    <string name="player_not_found_message">Määritettyä soitinta ei voi avata. Tarkista, onko soitin asennettu ja onko paketin nimi ja toiminto (* automaattista toimintohakua varten) kirjoitettu oikein asetustiedostoon.</string>
+    <string name="app_name">Music-KM</string>
+    <string name="settings_activity_label">Music-KM Asetukset</string>
+
+    <!-- MainActivity -->
+    <string name="player_not_found_title">Soitinta ei löytynyt</string>
+    <string name="player_not_found_message">Valittua soitinta ei ole enää asennettu. Valitse toinen Music-KM-asetuksista.</string>
+    <string name="open_settings_button">Avaa asetukset</string>
+
+    <!-- SettingsActivity -->
+    <string name="choose_player_title">Valitse oletusmusiikkisoitin</string>
+    <string name="no_players_found_title">Musiikkisoittimia ei löytynyt</string>
+    <string name="no_players_found_message">Järjestelmästäsi ei löytynyt yhteensopivia musiikkisoitinsovelluksia.</string>
 </resources>

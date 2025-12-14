@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Music-KM</string>
+    <string name="settings_activity_label">Ρυθμίσεις Music-KM</string>
+
+    <!-- MainActivity -->
+    <string name="player_not_found_title">Η συσκευή αναπαραγωγής δεν βρέθηκε</string>
+    <string name="player_not_found_message">Η επιλεγμένη συσκευή αναπαραγωγής δεν είναι πλέον εγκατεστημένη. Επιλέξτε άλλη από τις Ρυθμίσεις του Music-KM.</string>
+    <string name="open_settings_button">Άνοιγμα Ρυθμίσεων</string>
+
+    <!-- SettingsActivity -->
+    <string name="choose_player_title">Επιλέξτε μια προεπιλεγμένη συσκευή αναπαραγωγής μουσικής</string>
+    <string name="no_players_found_title">Δεν βρέθηκαν συσκευές αναπαραγωγής μουσικής</string>
+    <string name="no_players_found_message">Δεν βρέθηκαν συμβατές εφαρμογές αναπαραγωγής μουσικής στο σύστημά σας.</string>
+</resources>

@@ -1,6 +1,14 @@
 <resources>
-    <string name="app_name">MusicProxy</string>
-    <string name="activity_name">Muzyka</string>
-    <string name="player_not_found_title">MusicProxy: Nie znaleziono odtwarzacza</string>
-    <string name="player_not_found_message">Nie można otworzyć skonfigurowanego odtwarzacza. Sprawdź, czy odtwarzacz jest zainstalowany i czy nazwa pakietu i aktywność (* dla automatycznego wyszukiwania aktywności) są poprawnie wpisane w pliku konfiguracyjnym.</string>
+    <string name="app_name">Music-KM</string>
+    <string name="settings_activity_label">Ustawienia Music-KM</string>
+
+    <!-- MainActivity -->
+    <string name="player_not_found_title">Nie znaleziono odtwarzacza</string>
+    <string name="player_not_found_message">Wybrany odtwarzacz nie jest już zainstalowany. Wybierz inny w Ustawieniach Music-KM.</string>
+    <string name="open_settings_button">Otwórz ustawienia</string>
+
+    <!-- SettingsActivity -->
+    <string name="choose_player_title">Wybierz domyślny odtwarzacz muzyki</string>
+    <string name="no_players_found_title">Nie znaleziono odtwarzaczy muzyki</string>
+    <string name="no_players_found_message">W systemie nie znaleziono zgodnych aplikacji do odtwarzania muzyki.</string>
 </resources>

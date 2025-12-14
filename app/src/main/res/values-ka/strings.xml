@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Music-KM</string>
+    <string name="settings_activity_label">Music-KM პარამეტრები</string>
+
+    <!-- MainActivity -->
+    <string name="player_not_found_title">נגანი არ მოიძებნა</string>
+    <string name="player_not_found_message">არჩეული ნგანი აღარ არის დაინსტალირებული. გთხოვთ, აირჩიეთ სხვა Music-KM პარამეტრებიდან.</string>
+    <string name="open_settings_button">პარამეტრების გახსნა</string>
+
+    <!-- SettingsActivity -->
+    <string name="choose_player_title">აირჩიეთ ნაგულისხმევი მუსიკალური ნგანი</string>
+    <string name="no_players_found_title">მუსიკალური ნგნები არ მოიძებნა</string>
+    <string name="no_players_found_message">თქვენს სისტემაში არ მოიძებნა თავსებადი მუსიკალური ნגןის აპლიკაციები.</string>
+</resources>

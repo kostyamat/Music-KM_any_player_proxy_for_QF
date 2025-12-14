@@ -9,6 +9,7 @@ import android.content.SharedPreferences
 import android.content.pm.ResolveInfo
 import android.os.Bundle
 import android.util.Log
+import com.qf.musicplayer.ui.R
 
 class SettingsActivity : Activity() {
 
@@ -33,8 +34,8 @@ class SettingsActivity : Activity() {
         if (musicApps.isEmpty()) {
             // Handle case where no music players are installed
             AlertDialog.Builder(this)
-                .setTitle("No Music Players Found")
-                .setMessage("No compatible music player apps were found on your system.")
+                .setTitle(getString(R.string.player_not_found_title))
+                .setMessage(getString(R.string.player_not_found_message))
                 .setPositiveButton(android.R.string.ok) { _, _ -> finish() }
                 .setOnCancelListener { finish() }
                 .show()
@@ -44,7 +45,7 @@ class SettingsActivity : Activity() {
         val appNames = musicApps.map { it.loadLabel(packageManager) }.toTypedArray()
 
         AlertDialog.Builder(this)
-            .setTitle("Choose a Default Music Player")
+            .setTitle(getString(R.string.choose_player_title))
             .setItems(appNames) { _, which ->
                 val selectedPackage = musicApps[which].activityInfo.packageName
                 Log.d(TAG, "Player selected: $selectedPackage")
