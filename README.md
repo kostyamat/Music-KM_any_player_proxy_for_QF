@@ -1,198 +1,123 @@
---- START OF CONTEXT FOR TRANSFER ---
+# Music-KM
 
-# Music-KM: A Technical Guide for Advanced Android Integration
-
-**To my colleague:** This document is a detailed, step-by-step guide explaining the core, non-obvious techniques used in this project. It is designed to be a direct instruction manual for recreating this functionality in a similar environment, especially addressing the common pitfalls that can occur.
+[Українська](#українська) | [English](#english)
 
 ---
 
-(Parts 1-3 omitted for brevity - see previous versions if needed)
+## <a name="english"></a>English Description
+
+**Music-KM** is a utility application for QF001 / Roco K706 (UIS 7862A/7862S) Android head units. It allows you to replace the standard music player in the system's media carousel with any third-party player of your choice (e.g., Poweramp, Pulsar, etc.).
+
+### How it Works
+
+This application integrates into the system's "Mode" button cycle:
+
+1.  It registers itself as the system "Music" app.
+2.  When you select "Music" via the "Mode" button, Music-KM intercepts the command.
+3.  It then immediately launches the actual music player you have selected in its settings.
+4.  It cleverly holds the system's focus by covering the player with a transparent window, preventing the media carousel from switching to the next source.
+
+This creates a seamless experience, making your favorite player feel like a native part of the car's system.
+
+### Installation Requirements (Crucial!)
+
+To install this app as a system update and successfully bypass signature verification, you MUST meet the following requirements:
+
+*   **Root Access** is required.
+*   **Magisk** must be installed.
+*   **Zygisk** must be enabled in your Magisk settings.
+*   You must install the **PMPatch** Magisk Module to disable Android's signature verification check. Failure to do so will prevent the installation.
+    *   **Download PMPatch:** [Here](https://github.com/vova7878-modules/PMPatch/releases/download/v1.2.0/PMPatch3.zip)
+
+### Installation Steps
+
+1.  **Install the APK:** Install the `Music-KM.apk` from the [Releases](https://github.com/YOUR_USERNAME/YOUR_REPOSITORY/releases) page as a simple update for the system music player.
+2.  **Google Play Protect:** If Google Play Protect shows a warning, select "Install anyway."
+3.  **Background Service Permissions:** Immediately after installation, the app will open system settings. You must grant permission for the **"Music-KM"** service to run. This is essential for monitoring the state of your chosen player.
+4.  **Select Your Player:** On the next launch, the application will display a list of installed players. Select the player you wish to use.
+
+### How to Change the Player
+
+If you need to change the substitute player later:
+
+1.  Go to your list of all applications.
+2.  Launch the **"Music-KM Settings"** app.
+3.  Select a different player from the list.
+
+### Uninstallation
+
+Since this is installed as a system component update, you cannot uninstall it directly from the launcher. Use one of the following methods:
+
+**Option 1: Using ADB (Recommended)**
+1.  Connect to your head unit via ADB.
+2.  Run the command: `adb uninstall com.qf.musicplayer`
+3.  Reboot your head unit.
+
+**Option 2: Via App Settings**
+1.  Go to Settings → Apps.
+2.  Show system apps (usually via the three-dot menu).
+3.  Find "Music-KM" in the list.
+4.  Open it and select "Uninstall updates" from the three-dot menu.
 
 ---
 
-## Part 4: Bulletproof Code for Carousel Logic
+## <a name="українська"></a>Опис українською
 
-**To my colleague:** The other chat is going in circles. Here is a self-contained, copy-paste-ready example that correctly implements the carousel detection and "transparent cloak" logic. The primary problem is almost certainly that the `isCarouselLaunch` state is being lost or reset. This implementation prevents that.
+**Music-KM** — це допоміжний додаток для автомагнітол QF001 / Roco K706 (UIS 7862A/7862S), який дозволяє замінити стандартний музичний плеєр у системній медіа-каруселі на будь-який сторонній плеєр на ваш вибір (наприклад, Poweramp, Pulsar тощо).
 
-**Just copy this into your `MainActivity` (or equivalent) and adapt the names.**
+### Як це працює
 
-```kotlin
-import android.app.Activity
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
-import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.util.Log
-import android.view.MotionEvent
+Цей додаток інтегрується в системний цикл кнопки "Mode":
 
-// Adapt this to your actual class name
-class YourProxyActivity : Activity() {
+1.  Він реєструє себе як системний додаток "Музика".
+2.  Коли ви обираєте "Музика" за допомогою кнопки "Mode", Music-KM перехоплює команду.
+3.  Потім він негайно запускає справжній музичний плеєр, який ви обрали в його налаштуваннях.
+4.  Він "обманює" систему, накриваючи плеєр прозорим вікном і утримуючи фокус, щоб запобігти перемиканню медіа-каруселі.
 
-    // --- 1. DECLARE STATE AT THE CLASS LEVEL ---
-    private var isCarouselLaunch = false
-    private val handler = Handler(Looper.getMainLooper())
+Це створює відчуття повної інтеграції, ніби ваш улюблений плеєр є рідною частиною системи автомобіля.
 
-    companion object {
-        private const val CAROUSEL_REFERRER_HOST = "com.qf.framework"
-        private const val ACTION_FINISH_PROXY = "android.intent.action.MODE_SWITCH" // Or any other broadcast action
-        private const val TAG = "ProxyLogic"
-    }
+### Вимоги до встановлення (Важливо!)
 
-    // --- 2. UPDATE STATE ON EVERY LAUNCH --- 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        Log.d(TAG, "onCreate called.")
-        updateLaunchSource(intent)
-        registerFinishReceiver() // Register receiver for external finish commands
-        
-        // ... other onCreate logic ...
-        proceedWithProxyLogic()
-    }
+Щоб встановити цей додаток як системне оновлення та успішно обійти перевірку підпису, ви ПОВИННІ відповідати наступним вимогам:
 
-    override fun onNewIntent(intent: Intent?) {
-        super.onNewIntent(intent)
-        Log.d(TAG, "onNewIntent called.")
-        setIntent(intent)
-        updateLaunchSource(intent)
-    }
-    
-    private fun updateLaunchSource(intent: Intent?) {
-        if (intent?.action == Intent.ACTION_MAIN) {
-            val referrerHost = referrer?.host
-            isCarouselLaunch = (referrerHost == CAROUSEL_REFERRER_HOST)
-            Log.d(TAG, "Launch Source Analyzed. Is Carousel: $isCarouselLaunch. Referrer Host: $referrerHost")
-        }
-    }
+*   Потрібен **Root-доступ**.
+*   Має бути встановлений **Magisk**.
+*   У налаштуваннях Magisk має бути увімкнений **Zygisk**.
+*   Ви повинні встановити модуль Magisk **PMPatch**, щоб вимкнути системну перевірку підписів. Без нього встановлення буде неможливим.
+    *   **Завантажити PMPatch:** [Тут](https://github.com/vova7878-modules/PMPatch/releases/download/v1.2.0/PMPatch3.zip)
 
-    // --- 3. THE ACTUAL PROXY LOGIC EXECUTION ---
-    private fun proceedWithProxyLogic() {
-        Log.d(TAG, "Simulating launch of the real player...")
+### Кроки встановлення
 
-        Log.d(TAG, "FINAL CHECK before applying cloak. isCarouselLaunch = $isCarouselLaunch")
+1.  **Встановіть APK:** Встановіть файл `Music-KM.apk` зі сторінки [Релізів](https://github.com/YOUR_USERNAME/YOUR_REPOSITORY/releases) як звичайне оновлення для системного музичного плеєра.
+2.  **Google Play Protect:** Якщо Google Play Protect покаже попередження, оберіть "Все одно встановити".
+3.  **Дозволи для фонової служби:** Одразу після встановлення додаток відкриє системні налаштування. Ви повинні надати дозвіл на роботу службі **"Music-KM"**. Це необхідно для моніторингу стану обраного вами плеєра.
+4.  **Виберіть ваш плеєр:** При наступному запуску додаток відобразить список встановлених плеєрів. Оберіть той, який ви хочете використовувати.
 
-        if (isCarouselLaunch) {
-            Log.d(TAG, "DECISION: Apply the transparent cloak.")
-            handler.postDelayed({
-                val selfIntent = Intent(this, YourProxyActivity::class.java)
-                selfIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
-                startActivity(selfIntent)
-                Log.d(TAG, "Cloak applied.")
-            }, 350)
-        } else {
-            Log.d(TAG, "DECISION: Do NOT apply cloak. Finishing proxy.")
-            finish()
-        }
-    }
-    
-    // --- 4. UNCLOAKING MECHANISMS ---
+### Як змінити плеєр
 
-    // Method 1: Finish on any screen touch
-    override fun onTouchEvent(event: MotionEvent?): Boolean {
-        // We only care about the initial touch down.
-        if (event?.action == MotionEvent.ACTION_DOWN) {
-            Log.d(TAG, "Touch detected. Finishing proxy to reveal player.")
-            finish()
-            return true // We handled the event.
-        }
-        return super.onTouchEvent(event)
-    }
+Якщо вам потрібно буде пізніше змінити плеєр:
 
-    // Method 2: Finish on a specific broadcast
-    private val finishProxyReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            if (intent?.action == ACTION_FINISH_PROXY) {
-                Log.d(TAG, "Finish broadcast received. Finishing proxy.")
-                finish()
-            }
-        }
-    }
+1.  Перейдіть до списку всіх ваших додатків.
+2.  Запустіть додаток **"Налаштування Music-KM"**.
+3.  Виберіть інший плеєр зі списку.
 
-    private fun registerFinishReceiver() {
-        try {
-            val filter = IntentFilter(ACTION_FINISH_PROXY)
-            registerReceiver(finishProxyReceiver, filter)
-            Log.d(TAG, "Finish receiver registered for action: $ACTION_FINISH_PROXY")
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to register finish receiver", e)
-        }
-    }
+### Видалення
 
-    // --- 5. CLEAN UP --- 
-    override fun onDestroy() {
-        super.onDestroy()
-        handler.removeCallbacksAndMessages(null) // Stop any pending cloak actions
-        
-        // CRITICAL: Always unregister the receiver to prevent memory leaks.
-        try {
-            unregisterReceiver(finishProxyReceiver)
-            Log.d(TAG, "Finish receiver unregistered.")
-        } catch (e: Exception) {
-            // Receiver might not have been registered, ignore.
-        }
-        
-        Log.d(TAG, "Proxy destroyed.")
-    }
-}
-```
+Оскільки додаток встановлюється як оновлення системного компонента, його не можна видалити напряму з лаунчера. Використовуйте один з наступних методів:
 
-## Part 5: Handling the "Uncloak"
+**Спосіб 1: Через ADB (рекомендовано)**
+1.  Підключіться до вашої магнітоли через ADB.
+2.  Виконайте команду: `adb uninstall com.qf.musicplayer`
+3.  Перезавантажте магнітолу.
 
-**To my colleague:** The proxy is useless if the user can't get rid of the transparent window. Here are the two standard ways to "uncloak" and give control back to the user.
+**Спосіб 2: Через налаштування додатків**
+1.  Перейдіть у Налаштування → Додатки.
+2.  Увімкніть показ системних додатків (зазвичай через меню з трьома крапками).
+3.  Знайдіть "Music-KM" у списку.
+4.  Відкрийте його та оберіть "Видалити оновлення" з меню (три крапки).
 
-### Mechanism 1: Touching the Screen
+---
 
-This is the most intuitive method. Since our `YourProxyActivity` is the top-most window (even though it's invisible), it will receive all touch events. We simply need to override `onTouchEvent`.
+### Для розробників
 
-**Implementation:**
-```kotlin
-// In YourProxyActivity.kt
-override fun onTouchEvent(event: MotionEvent?): Boolean {
-    // We only care about the initial touch down to avoid multiple triggers.
-    if (event?.action == MotionEvent.ACTION_DOWN) {
-        Log.d(TAG, "Touch detected. Finishing proxy to reveal player.")
-        finish() // This closes the transparent window.
-        return true // We have consumed this event.
-    }
-    return super.onTouchEvent(event)
-}
-```
-With this code, the moment the user touches anywhere on the screen, the transparent activity is destroyed, revealing the real player underneath.
-
-### Mechanism 2: Responding to a System Event (like a Button Press)
-
-Many head units send a system-wide `Broadcast` when a physical button (like "Mode") is pressed again. We can listen for this broadcast to close our proxy.
-
-**Implementation Steps:**
-
-1.  **Define the Action String:** Find the exact action string for the broadcast (e.g., `android.intent.action.MODE_SWITCH`).
-
-2.  **Create a `BroadcastReceiver`:** This object's job is to listen for that specific action.
-    ```kotlin
-    private val finishProxyReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            // Check if the received broadcast has the action we are waiting for.
-            if (intent?.action == ACTION_FINISH_PROXY) {
-                Log.d(TAG, "Finish broadcast received. Finishing proxy.")
-                finish() // Close the activity.
-            }
-        }
-    }
-    ```
-
-3.  **Register and Unregister the Receiver:** You must register the receiver when the activity starts and **always** unregister it when the activity is destroyed to prevent memory leaks.
-    ```kotlin
-    // In onCreate()
-    registerReceiver(finishProxyReceiver, IntentFilter(ACTION_FINISH_PROXY))
-
-    // In onDestroy()
-    try {
-        unregisterReceiver(finishProxyReceiver)
-    } catch (e: Exception) {
-        // Failsafe in case it was never registered.
-    }
-    ```
-
-By implementing both mechanisms, you give the user two reliable ways to dismiss the proxy and interact with their chosen music player, completing the seamless integration.
+Щоб ознайомитися з технічними деталями, особливостями реалізації та поясненням "хаків", використаних у цьому проекті, перегляньте [**посібник для розробників (README_DEV.md)**](README_DEV.md).
