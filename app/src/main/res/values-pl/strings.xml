@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Music-KM</string>
+    <string name="settings_activity_label">Ustawienia Music-KM</string>
+
+    <!-- MainActivity -->
+    <string name="player_not_found_title">Nie znaleziono odtwarzacza</string>
+    <string name="player_not_found_message">Wybrany odtwarzacz nie jest już zainstalowany. Wybierz inny w Ustawieniach Music-KM.</string>
+    <string name="open_settings_button">Otwórz ustawienia</string>
+
+    <!-- SettingsActivity -->
+    <string name="choose_player_title">Wybierz domyślny odtwarzacz muzyki</string>
+    <string name="no_players_found_title">Nie znaleziono odtwarzaczy muzyki</string>
+    <string name="no_players_found_message">W systemie nie znaleziono zgodnych aplikacji do odtwarzania muzyki.</string>
+</resources>

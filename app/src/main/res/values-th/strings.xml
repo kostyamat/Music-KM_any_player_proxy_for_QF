@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Music-KM</string>
+    <string name="settings_activity_label">การตั้งค่า Music-KM</string>
+
+    <!-- MainActivity -->
+    <string name="player_not_found_title">ไม่พบผู้เล่น</string>
+    <string name="player_not_found_message">ผู้เล่นที่เลือกไม่ได้ติดตั้งอีกต่อไป โปรดเลือกอันอื่นจากการตั้งค่า Music-KM</string>
+    <string name="open_settings_button">เปิดการตั้งค่า</string>
+
+    <!-- SettingsActivity -->
+    <string name="choose_player_title">เลือกเครื่องเล่นเพลงเริ่มต้น</string>
+    <string name="no_players_found_title">ไม่พบเครื่องเล่นเพลง</string>
+    <string name="no_players_found_message">ไม่พบแอปเครื่องเล่นเพลงที่เข้ากันได้ในระบบของคุณ</string>
+</resources>

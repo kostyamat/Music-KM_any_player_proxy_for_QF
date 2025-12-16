@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Music-KM</string>
+    <string name="settings_activity_label">Ajustes de Music-KM</string>
+
+    <!-- MainActivity -->
+    <string name="player_not_found_title">Reproductor no encontrado</string>
+    <string name="player_not_found_message">El reproductor seleccionado ya no está instalado. Por favor, elija otro desde los Ajustes de Music-KM.</string>
+    <string name="open_settings_button">Abrir Ajustes</string>
+
+    <!-- SettingsActivity -->
+    <string name="choose_player_title">Elegir un reproductor de música predeterminado</string>
+    <string name="no_players_found_title">No se encontraron reproductores de música</string>
+    <string name="no_players_found_message">No se encontraron aplicaciones de reproductor de música compatibles en su sistema.</string>
+</resources>

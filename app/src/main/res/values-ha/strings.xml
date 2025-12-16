@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Music-KM</string>
+    <string name="settings_activity_label">Saitunan Music-KM</string>
+
+    <!-- MainActivity -->
+    <string name="player_not_found_title">Ba a Samu Mai kunnawa ba</string>
+    <string name="player_not_found_message">Mai kunna da aka zaɓa ba a sake shigar da shi ba. Da fatan za a zaɓi wani daga Saitunan Music-KM.</string>
+    <string name="open_settings_button">Bude Saituna</string>
+
+    <!-- SettingsActivity -->
+    <string name="choose_player_title">Zaɓi Tsoffin Mai kunna Kiɗa</string>
+    <string name="no_players_found_title">Ba a Samu Masu kunna Kiɗa ba</string>
+    <string name="no_players_found_message">Ba a sami aikace-aikacen kunna kiɗa masu jituwa ba a kan tsarinka.</string>
+</resources>

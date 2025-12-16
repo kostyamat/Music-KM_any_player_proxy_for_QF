@@ -1,31 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:background="#000000">
 
     <TextView
-        android:id="@+id/noPlayersText"
+        android:id="@+id/text_info"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="No media players found"
-        android:visibility="gone"
-        android:textSize="18sp"
-        android:layout_gravity="center"/>
-
-    <ListView
-        android:id="@+id/listView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:divider="@android:color/darker_gray"
-        android:dividerHeight="1dp"/>
-
-    <Button
-        android:id="@+id/showAllAppsButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Show All Apps"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="16dp"/>
-</LinearLayout>
+        android:layout_gravity="center"
+        android:text="Loading..."
+        android:textColor="#FFFFFF"
+        android:textSize="24sp" />
+</FrameLayout>

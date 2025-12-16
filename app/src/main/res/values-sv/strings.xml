@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Music-KM</string>
+    <string name="settings_activity_label">Music-KM Inställningar</string>
+
+    <!-- MainActivity -->
+    <string name="player_not_found_title">Spelare hittades inte</string>
+    <string name="player_not_found_message">Den valda spelaren är inte längre installerad. Välj en annan från Music-KM-inställningarna.</string>
+    <string name="open_settings_button">Öppna inställningar</string>
+
+    <!-- SettingsActivity -->
+    <string name="choose_player_title">Välj en standardmusikspelare</string>
+    <string name="no_players_found_title">Inga musikspelare hittades</string>
+    <string name="no_players_found_message">Inga kompatibla musikspelare-appar hittades på ditt system.</string>
+</resources>

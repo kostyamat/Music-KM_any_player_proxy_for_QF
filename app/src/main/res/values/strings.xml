@@ -1,16 +1,14 @@
 <resources>
-    <string name="app_name">Music Player Clone</string>
-    <string name="select_player">Виберіть плеєр</string>
-    <string name="no_players_found">Плеєри не знайдено</string>
-    <string name="show_all_apps">Всі додатки</string>
-    <string name="back">Назад</string>
-    <string name="reselect">Перевибрати</string>
-    <string name="ok">ОК</string>
-    <string name="mapping_header">Зіставлення активностей</string>
-    <string name="save_mapping">Зберегти</string>
+    <string name="app_name">Music-KM</string>
+    <string name="settings_activity_label">Music-KM Settings</string>
 
-    <!-- Додаю ці рядки, бо система їх запитувала -->
-    <string name="back_button">Назад</string>
-    <string name="reselect_button">Перевибрати</string>
-    <string name="ok_button">ОК</string>
+    <!-- MainActivity -->
+    <string name="player_not_found_title">Player Not Found</string>
+    <string name="player_not_found_message">The selected player is no longer installed. Please choose another one from the Music-KM Settings.</string>
+    <string name="open_settings_button">Open Settings</string>
+
+    <!-- SettingsActivity -->
+    <string name="choose_player_title">Choose a Default Music Player</string>
+    <string name="no_players_found_title">No Music Players Found</string>
+    <string name="no_players_found_message">No compatible music player apps were found on your system.</string>
 </resources>

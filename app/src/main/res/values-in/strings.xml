@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Music-KM</string>
+    <string name="settings_activity_label">Pengaturan Music-KM</string>
+
+    <!-- MainActivity -->
+    <string name="player_not_found_title">Pemutar tidak ditemukan</string>
+    <string name="player_not_found_message">Pemutar yang dipilih tidak lagi terpasang. Silakan pilih yang lain dari Pengaturan Music-KM.</string>
+    <string name="open_settings_button">Buka Pengaturan</string>
+
+    <!-- SettingsActivity -->
+    <string name="choose_player_title">Pilih pemutar musik default</string>
+    <string name="no_players_found_title">Tidak ada pemutar musik yang ditemukan</string>
+    <string name="no_players_found_message">Tidak ada aplikasi pemutar musik yang kompatibel yang ditemukan di sistem Anda.</string>
+</resources>

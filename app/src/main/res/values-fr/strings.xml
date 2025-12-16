@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Music-KM</string>
+    <string name="settings_activity_label">Paramètres de Music-KM</string>
+
+    <!-- MainActivity -->
+    <string name="player_not_found_title">Lecteur introuvable</string>
+    <string name="player_not_found_message">Le lecteur sélectionné n\'est plus installé. Veuillez en choisir un autre dans les paramètres de Music-KM.</string>
+    <string name="open_settings_button">Ouvrir les paramètres</string>
+
+    <!-- SettingsActivity -->
+    <string name="choose_player_title">Choisir un lecteur de musique par défaut</string>
+    <string name="no_players_found_title">Aucun lecteur de musique trouvé</string>
+    <string name="no_players_found_message">Aucune application de lecteur de musique compatible n\'a été trouvée sur votre système.</string>
+</resources>

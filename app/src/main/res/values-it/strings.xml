@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Music-KM</string>
+    <string name="settings_activity_label">Impostazioni Music-KM</string>
+
+    <!-- MainActivity -->
+    <string name="player_not_found_title">Lettore non trovato</string>
+    <string name="player_not_found_message">Il lettore selezionato non è più installato. Scegline un altro dalle Impostazioni di Music-KM.</string>
+    <string name="open_settings_button">Apri impostazioni</string>
+
+    <!-- SettingsActivity -->
+    <string name="choose_player_title">Scegli un lettore musicale predefinito</string>
+    <string name="no_players_found_title">Nessun lettore musicale trovato</string>
+    <string name="no_players_found_message">Nessuna app di lettore musicale compatibile trovata sul tuo sistema.</string>
+</resources>

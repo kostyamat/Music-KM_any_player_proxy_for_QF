@@ -1,149 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:tools="http://schemas.android.com/tools"
-    package="com.qf.musicplayer"
-    xmlns:android="http://schemas.android.com/apk/res/android">
-    <uses-permission
-        android:name="android.permission.INTERACT_ACROSS_USERS_FULL"
-        tools:ignore="ProtectedPermissions" />
-    <uses-permission
-        android:name="android.permission.INTERACT_ACROSS_USERS"
-        tools:ignore="ProtectedPermissions" />
-    <!-- Додаток може переглядати вміст у спільній пам’яті. -->
-    <uses-permission
-        android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <!-- Додаток може писати вміст у спільній пам’яті. -->
-    <uses-permission
-        android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission
-        android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" />
-    <!-- Дозволяє програмі припиняти фонові процеси інших програм. Це може зупиняти запущені програми. -->
-    <uses-permission
-        android:name="android.permission.RESTART_PACKAGES" />
-    <!-- Дозволяє програмі змінювати дані налаштувань системи. Шкідливі програми можуть пошкодити конфігурацію вашої системи. -->
-    <uses-permission
-        android:name="android.permission.WRITE_SETTINGS" />
-    <uses-permission
-        android:name="android.permission.READ_SETTINGS" />
-    <!-- Цей додаток може відображатися поверх інших додатків або частин екрана. Це може заважати нормальній взаємодії з додатком або змінити відображення інших додатків. -->
-    <uses-permission
-        android:name="android.permission.SYSTEM_ALERT_WINDOW" />
-    <!-- Дозволяє програмі не допускати перехід телефону в режим сну. -->
-    <uses-permission
-        android:name="android.permission.WAKE_LOCK" />
-    <!-- Дозволяє програмі отримувати доступ до телефонних функцій пристрою. Такий дозвіл дає програмі змогу визначати номер телефону й ідентифікатори пристрою, активність виклику, а також віддалений номер, на який здійснюється виклик. -->
-    <uses-permission
-        android:name="android.permission.READ_PHONE_STATE" />
-    <!-- Дозволяє програмі надсилати закріплені широкомовні повідомлення, які залишаються після відтворення широкомовного повідомлення. Надмірне використання може сповільнювати роботу телефону або порушувати її стабільність, спричиняючи завелике використання пам’яті. -->
-    <uses-permission
-        android:name="android.permission.BROADCAST_STICKY" />
-    <!-- Додаток може створювати сокети мережі та використовувати спеціальні мережеві протоколи. Оскільки веб-переглядач та інші додатки самостійно реалізують функції надсилання даних в Інтернет, цей дозвіл надавати не обов’язково. -->
-    <uses-permission
-        android:name="android.permission.INTERNET" />
-    <!-- Дозволяє програмі переглядати інформацію про з’єднання з мережами, як-от дані про наявні та під’єднані мережі. -->
-    <uses-permission
-        android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission
-        android:name="android.permission.CHANGE_CONFIGURATION" />
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    android:sharedUserId="android.uid.system">
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
+    <uses-permission android:name="android.permission.REORDER_TASKS" />
+
+    <!-- Permissions for the services -->
+    <uses-permission android:name="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE" />
 
     <application
-        android:label="@string/app_name"
         android:icon="@mipmap/ic_launcher"
-        android:name="com.qf.media.base.BaseApplication"
-        android:theme="@style/Theme.Clone_MusicPlayer_QF"
-        android:allowBackup="true"
-        android:supportsRtl="false"
-        android:resizeableActivity="true"
-        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
-        android:requestLegacyExternalStorage="true">
+        android:requestLegacyExternalStorage="true"
+        android:label="@string/app_name"
+        android:theme="@android:style/Theme.NoTitleBar">
+
         <activity
-            android:label="@string/app_name"
             android:name="com.qf.musicplayer.ui.MainActivity"
             android:exported="true"
-            android:clearTaskOnLaunch="true"
-            android:excludeFromRecents="false"
-            android:launchMode="singleTask"
-            android:configChanges="uiMode">
-            <intent-filter>
-                <action
-                    android:name="android.intent.action.MAIN" />
-                <category
-                    android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-            <intent-filter>
-                <action
-                    android:name="android.intent.action.VIEW" />
-                <category
-                    android:name="android.intent.category.DEFAULT" />
-                <data
-                    android:scheme="file" />
-                <data
-                    android:mimeType="audio/*" />
-                <data
-                    android:mimeType="application/ogg" />
-                <data
-                    android:mimeType="application/x-ogg" />
-                <data
-                    android:mimeType="application/itunes" />
-            </intent-filter>
-            <intent-filter>
-                <action
-                    android:name="android.intent.action.VIEW" />
-                <category
-                    android:name="android.intent.category.DEFAULT" />
-                <category
-                    android:name="android.intent.category.BROWSABLE" />
-                <data
-                    android:scheme="content" />
-                <data
-                    android:mimeType="audio/*" />
-                <data
-                    android:mimeType="application/ogg" />
-                <data
-                    android:mimeType="application/x-ogg" />
-                <data
-                    android:mimeType="application/itunes" />
-            </intent-filter>
-            <intent-filter>
-                <action
-                    android:name="android.intent.action.VIEW" />
-                <category
-                    android:name="android.intent.category.DEFAULT" />
-                <data
-                    android:scheme="content" />
-                <data
-                    android:host="media" />
-                <data
-                    android:mimeType="audio/*" />
-                <data
-                    android:mimeType="application/ogg" />
-                <data
-                    android:mimeType="application/x-ogg" />
-                <data
-                    android:mimeType="application/itunes" />
-            </intent-filter>
-        </activity>
-        <activity
             android:label="@string/app_name"
-            android:name="com.qf.musicplayer.ui.PcmPlayerActivity"
-            android:exported="true"
-            android:clearTaskOnLaunch="true"
-            android:excludeFromRecents="false"
             android:launchMode="singleTask"
-            android:configChanges="uiMode">
+            android:theme="@android:style/Theme.Translucent.NoTitleBar">
+
+
             <intent-filter>
-                <action
-                    android:name="android.intent.action.MAIN" />
-                <category
-                    android:name="android.intent.category.DEFAULT" />
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <service
-            android:name="com.carsyso.mediasdk.core.MediaService"
-            android:exported="true">
+        
+        <activity
+            android:name="com.qf.musicplayer.settings.SettingsActivity"
+            android:exported="true"
+            android:label="@string/settings_activity_label"
+            android:theme="@android:style/Theme.DeviceDefault">
             <intent-filter>
-                <action
-                    android:name="com.qf.musicplayer.MediaService" />
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <service
+            android:name="com.qf.musicplayer.ui.MediaService"
+            android:exported="true"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
             </intent-filter>
         </service>
+
     </application>
 </manifest>

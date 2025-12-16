@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Music-KM</string>
+    <string name="settings_activity_label">Setări Music-KM</string>
+
+    <!-- MainActivity -->
+    <string name="player_not_found_title">Player nu a fost găsit</string>
+    <string name="player_not_found_message">Player-ul selectat nu mai este instalat. Vă rugăm să alegeți altul din Setările Music-KM.</string>
+    <string name="open_settings_button">Deschide Setări</string>
+
+    <!-- SettingsActivity -->
+    <string name="choose_player_title">Alegeți un player de muzică implicit</string>
+    <string name="no_players_found_title">Nu s-au găsit playere de muzică</string>
+    <string name="no_players_found_message">Nu au fost găsite aplicații compatibile pentru redarea muzicii pe sistemul dvs.</string>
+</resources>

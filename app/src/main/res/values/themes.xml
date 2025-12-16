@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.Clone_MusicPlayer_QF" parent="Theme.AppCompat.Light.NoActionBar">
-        <!-- Можна додати додаткові налаштування, якщо потрібно -->
+
+    <style name="Theme.MusicProxy" parent="android:Theme.Material.Light.NoActionBar" />
+*
+    <style name="Theme.TransparentProxy" parent="android:Theme.Translucent.NoTitleBar">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:colorBackgroundCacheHint">@null</item>
+        <item name="android:windowIsTranslucent">true</item>
     </style>
+
 </resources>
